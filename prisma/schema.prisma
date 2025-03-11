@@ -1,0 +1,186 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("MONGO_URI")
+}
+
+// Db  models MongoDB
+model User {
+  id         String @id @default(auto()) @map("_id") @db.ObjectId
+  name       String
+  email      String
+  phone      String
+  password   String
+  image      String?
+  dob        DateTime?
+  valid_until DateTime?
+  created_at DateTime
+  updated_at DateTime
+
+  favourites    Favourite[]
+  play_history  PlayHistory[]
+  playlists     Playlist[]
+  purchases     Purchase[]
+  searches      Searches[]
+}
+
+model Track {
+  id           String @id @default(auto()) @map("_id") @db.ObjectId
+  name         String
+  genre_id     String @db.ObjectId
+  album_id     String @db.ObjectId
+  artist_id    String @db.ObjectId
+  listen_count Int
+  description  String?
+  created_at   DateTime
+
+  genre           Genre          @relation(fields: [genre_id], references: [id])
+  album           Album          @relation(fields: [album_id], references: [id])
+  artist          Artist         @relation(fields: [artist_id], references: [id])
+  favourites      Favourite[]
+  play_history    PlayHistory[]
+  playlist_tracks PlaylistTrack[]
+}
+
+model Album {
+  id          String @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  description String?
+  image       String?
+  bg_image    String?
+  artist_id   String @db.ObjectId
+  genre_id    String @db.ObjectId
+  created_at  DateTime
+
+  artist        Artist        @relation(fields: [artist_id], references: [id])
+  genre         Genre         @relation(fields: [genre_id], references: [id])
+  tracks        Track[]
+  favourites    Favourite[]
+  play_history  PlayHistory[]
+}
+
+model Artist {
+  id         String @id @default(auto()) @map("_id") @db.ObjectId
+  name       String
+  email      String?
+  phone      String?
+  password   String?
+  image      String?
+  bg_image   String?
+  dob        DateTime?
+  insta_link String?
+  ytb_link   String?
+  status     String?
+  created_at DateTime
+  updated_at DateTime
+
+  albums     Album[]
+  tracks     Track[]
+}
+
+model Genre {
+  id         String @id @default(auto()) @map("_id") @db.ObjectId
+  name       String
+  created_at DateTime
+
+  albums       Album[]
+  tracks       Track[]
+  play_history PlayHistory[]
+}
+
+model Playlist {
+  id          String @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  user_id     String @db.ObjectId
+  description String?
+  created_at  DateTime
+
+  user            User            @relation(fields: [user_id], references: [id])
+  playlist_tracks PlaylistTrack[]
+}
+
+model PlaylistTrack {
+  id          String @id @default(auto()) @map("_id") @db.ObjectId
+  playlist_id String @db.ObjectId
+  track_id    String @db.ObjectId
+
+  playlist    Playlist    @relation(fields: [playlist_id], references: [id])
+  track       Track       @relation(fields: [track_id], references: [id])
+
+  @@unique([playlist_id, track_id])
+}
+
+model Favourite {
+  id         String @id @default(auto()) @map("_id") @db.ObjectId
+  user_id    String @db.ObjectId
+  track_id   String @db.ObjectId
+  album_id   String @db.ObjectId
+  created_at DateTime
+
+  user       User        @relation(fields: [user_id], references: [id])
+  track      Track       @relation(fields: [track_id], references: [id])
+  album      Album       @relation(fields: [album_id], references: [id])
+}
+
+model PlayHistory {
+  id         String @id @default(auto()) @map("_id") @db.ObjectId
+  user_id    String @db.ObjectId
+  track_id   String @db.ObjectId
+  album_id   String @db.ObjectId
+  genre_id   String @db.ObjectId
+  created_at DateTime
+
+  user       User        @relation(fields: [user_id], references: [id])
+  track      Track       @relation(fields: [track_id], references: [id])
+  album      Album       @relation(fields: [album_id], references: [id])
+  genre      Genre       @relation(fields: [genre_id], references: [id])
+}
+
+model Admin {
+  id         String @id @default(auto()) @map("_id") @db.ObjectId
+  name       String
+  image      String?
+  email      String
+  password   String
+  staff_id   String
+  status     String
+  created_at DateTime
+}
+
+model Searches {
+  id         String @id @default(auto()) @map("_id") @db.ObjectId
+  search     String
+  user_id    String @db.ObjectId
+  flag       Int
+  created_at DateTime
+
+  user       User        @relation(fields: [user_id], references: [id])
+}
+
+model Packages {
+  id          String @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  description String?
+  num_of_days Int
+  price       Int
+  created_at  DateTime
+  updated_at  DateTime
+
+  purchases   Purchase[]
+}
+
+model Purchase {
+  id          String @id @default(auto()) @map("_id") @db.ObjectId
+  user_id     String @db.ObjectId
+  package_id  String @db.ObjectId
+  num_of_days Int
+  price       Int
+  status      String
+  created_at  DateTime
+
+  user        User       @relation(fields: [user_id], references: [id])
+  package     Packages   @relation(fields: [package_id], references: [id])
+}

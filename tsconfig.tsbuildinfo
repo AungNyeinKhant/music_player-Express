@@ -1,0 +1,1 @@
+{"root":["./src/index.ts","./src/controllers/artist/albumcontroller.ts","./src/controllers/customer/customercontroller.ts","./src/routers/adminrouter.ts","./src/routers/artistrouter.ts","./src/routers/customerrouter.ts","./src/services/customerservice.ts","./src/types/customer.dto.ts","./src/types/helper.dto.ts","./src/utils/helper.ts"],"version":"5.8.2"}
