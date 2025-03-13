@@ -16,6 +16,7 @@ model User {
   password   String
   image      String?
   dob        DateTime?
+  suspended  Boolean @default(false)
   valid_until DateTime?
   created_at DateTime
   updated_at DateTime
@@ -71,6 +72,7 @@ model Artist {
   image      String?
   bg_image   String?
   dob        DateTime?
+  suspended  Boolean @default(false)
   insta_link String?
   ytb_link   String?
   status     String?
@@ -146,7 +148,7 @@ model Admin {
   email      String
   password   String
   staff_id   String
-  status     String
+  suspended  Boolean @default(false)
   created_at DateTime
 }
 
@@ -183,4 +185,15 @@ model Purchase {
 
   user        User       @relation(fields: [user_id], references: [id])
   package     Packages   @relation(fields: [package_id], references: [id])
+}
+
+model Sessions{
+  id         String @id @default(auto()) @map("_id") @db.ObjectId
+  user_id    String @db.ObjectId @default("null")
+  role    String @default("customer")
+  token      String
+  active      Boolean
+  created_at DateTime
+
+  
 }
