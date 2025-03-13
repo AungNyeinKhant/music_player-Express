@@ -1,22 +1,22 @@
 import express from "express";
 import helmet from "helmet";
 import cors from "cors";
-import dotenv from "dotenv";
+import "dotenv/config";
 
-import { getEnv } from "./utils/helper";
-import customerRouter from "./routers/customerRouter";
+import userRouter from "./routers/userRouter";
 import artistRouter from "./routers/artistRouter";
 import adminRouter from "./routers/adminRouter";
+import { config } from "./config/app.config";
+import { errorHandler } from "./middleware/errorHandler";
 
 const app = express();
-const PORT = getEnv("PORT", "3000");
-const BASE_PATH = getEnv("BASE_PATH", "/api/v1");
+const PORT = config.PORT;
+const BASE_PATH = config.BASE_PATH;
 
-dotenv.config();
 app.use(helmet());
 app.use(
   cors({
-    origin: getEnv("APP_ORIGIN", "localhost"), //["http://localhost:3000", "https://yourdomain.com"],
+    origin: config.ALLOW_ORIGIN, //["http://localhost:3000", "https://yourdomain.com"],
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
     // credentials: true,
@@ -26,9 +26,11 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use(`${BASE_PATH}/customer`, customerRouter);
+app.use(`${BASE_PATH}/user`, userRouter);
 app.use(`${BASE_PATH}/artist`, artistRouter);
 app.use(`${BASE_PATH}/admin`, adminRouter);
+
+app.use(errorHandler);
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);

@@ -1,10 +1,10 @@
-export type CustomerRegisterDto = {
+export type UserRegisterDto = {
   username?: string;
   email: string;
   password: string;
 };
 
-export type CustomerRegisterResponseDto = {
+export type UserRegisterResponseDto = {
   email: string;
   username: string;
 };
