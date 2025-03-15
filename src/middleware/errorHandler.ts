@@ -24,7 +24,8 @@ export const errorHandler: ErrorRequestHandler = (
   if (error instanceof SyntaxError) {
     const response = responseFormatter(
       false,
-      "Invalid JSON format, please check your request body"
+      "Invalid JSON format, please check your request body",
+      error.message
     );
     return res.status(HTTPSTATUS.BAD_REQUEST).json(response);
   }

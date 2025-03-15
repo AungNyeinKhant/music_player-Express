@@ -7,19 +7,25 @@ datasource db {
   url      = env("MONGO_URI")
 }
 
+
+enum PurchaseStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
 // Db  models MongoDB
 model User {
   id         String @id @default(auto()) @map("_id") @db.ObjectId
   name       String
-  email      String
+  email      String @unique
   phone      String
   password   String
   image      String?
   dob        DateTime?
   suspended  Boolean @default(false)
   valid_until DateTime?
-  created_at DateTime
-  updated_at DateTime
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
   favourites    Favourite[]
   play_history  PlayHistory[]
@@ -34,9 +40,9 @@ model Track {
   genre_id     String @db.ObjectId
   album_id     String @db.ObjectId
   artist_id    String @db.ObjectId
-  listen_count Int
+  listen_count Int @default(0)
   description  String?
-  created_at   DateTime
+  created_at   DateTime @default(now())
 
   genre           Genre          @relation(fields: [genre_id], references: [id])
   album           Album          @relation(fields: [album_id], references: [id])
@@ -54,7 +60,7 @@ model Album {
   bg_image    String?
   artist_id   String @db.ObjectId
   genre_id    String @db.ObjectId
-  created_at  DateTime
+  created_at  DateTime @default(now())
 
   artist        Artist        @relation(fields: [artist_id], references: [id])
   genre         Genre         @relation(fields: [genre_id], references: [id])
@@ -66,18 +72,18 @@ model Album {
 model Artist {
   id         String @id @default(auto()) @map("_id") @db.ObjectId
   name       String
-  email      String?
-  phone      String?
-  password   String?
+  email      String @unique
+  phone      String
+  password   String
   image      String?
   bg_image   String?
   dob        DateTime?
   suspended  Boolean @default(false)
-  insta_link String?
-  ytb_link   String?
-  status     String?
-  created_at DateTime
-  updated_at DateTime
+  nrc_front String 
+  nrc_back   String?
+  fav_count Int @default(0)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
   albums     Album[]
   tracks     Track[]
@@ -86,7 +92,7 @@ model Artist {
 model Genre {
   id         String @id @default(auto()) @map("_id") @db.ObjectId
   name       String
-  created_at DateTime
+  created_at DateTime @default(now())
 
   albums       Album[]
   tracks       Track[]
@@ -98,7 +104,7 @@ model Playlist {
   name        String
   user_id     String @db.ObjectId
   description String?
-  created_at  DateTime
+  created_at  DateTime @default(now())
 
   user            User            @relation(fields: [user_id], references: [id])
   playlist_tracks PlaylistTrack[]
@@ -120,7 +126,7 @@ model Favourite {
   user_id    String @db.ObjectId
   track_id   String @db.ObjectId
   album_id   String @db.ObjectId
-  created_at DateTime
+  created_at DateTime @default(now())
 
   user       User        @relation(fields: [user_id], references: [id])
   track      Track       @relation(fields: [track_id], references: [id])
@@ -133,7 +139,7 @@ model PlayHistory {
   track_id   String @db.ObjectId
   album_id   String @db.ObjectId
   genre_id   String @db.ObjectId
-  created_at DateTime
+  created_at DateTime @default(now())
 
   user       User        @relation(fields: [user_id], references: [id])
   track      Track       @relation(fields: [track_id], references: [id])
@@ -145,11 +151,11 @@ model Admin {
   id         String @id @default(auto()) @map("_id") @db.ObjectId
   name       String
   image      String?
-  email      String
+  email      String @unique
   password   String
   staff_id   String
   suspended  Boolean @default(false)
-  created_at DateTime
+  created_at DateTime @default(now())
 }
 
 model Searches {
@@ -157,7 +163,7 @@ model Searches {
   search     String
   user_id    String @db.ObjectId
   flag       Int
-  created_at DateTime
+  created_at DateTime @default(now())
 
   user       User        @relation(fields: [user_id], references: [id])
 }
@@ -168,8 +174,8 @@ model Packages {
   description String?
   num_of_days Int
   price       Int
-  created_at  DateTime
-  updated_at  DateTime
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
 
   purchases   Purchase[]
 }
@@ -180,8 +186,8 @@ model Purchase {
   package_id  String @db.ObjectId
   num_of_days Int
   price       Int
-  status      String
-  created_at  DateTime
+  status      PurchaseStatus @default(PENDING)
+  created_at  DateTime @default(now())
 
   user        User       @relation(fields: [user_id], references: [id])
   package     Packages   @relation(fields: [package_id], references: [id])
@@ -193,7 +199,5 @@ model Sessions{
   role    String @default("customer")
   token      String
   active      Boolean
-  created_at DateTime
-
-  
+  created_at DateTime @default(now())
 }
