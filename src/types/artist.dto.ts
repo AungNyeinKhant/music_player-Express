@@ -5,7 +5,12 @@ export type ArtistRegisterDto = {
   password: string;
   image?: Express.Multer.File | undefined;
   bg_image?: Express.Multer.File | undefined;
-  dob: Date;
+  dob: string;
   nrc_front: Express.Multer.File;
   nrc_back?: Express.Multer.File | undefined;
+};
+
+export type ArtistLoginDto = {
+  email: string;
+  password: string;
 };

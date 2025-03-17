@@ -93,7 +93,7 @@ export const registerArtistSchema = z.object({
   password: passwordSchema,
   // image: imageSchema.optional(),
   // bg_image: imageSchema.optional(),
-  dob: z.date(),
+  dob: z.string().trim().min(1).max(100), //z.date(),
   // nrc_front: imageSchema,
   // nrc_back: imageSchema.optional(),
 });

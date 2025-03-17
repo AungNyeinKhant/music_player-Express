@@ -2,15 +2,22 @@ import { Router } from "express";
 import { getAlbumById } from "../controllers/artist/albumController";
 import artistAuthController from "../controllers/auth/artistAuthController";
 import createMulter from "../middleware/multer";
+import { authenticateJWT } from "../strategies/jwt.strategy";
+import { authorize } from "../utils/jwt";
 
 const artistRouter = Router();
 
 //customer APIs below
 artistRouter.get("/");
-artistRouter.get("/album/:id", getAlbumById);
-
-artistRouter.get("/auth/login");
 artistRouter.get(
+  "/album/:id",
+  authenticateJWT,
+  authorize("artist"),
+  getAlbumById
+);
+
+artistRouter.post("/auth/login", artistAuthController.login);
+artistRouter.post(
   "/auth/register",
   createMulter("uploads/artist", "image").fields([
     { name: "image", maxCount: 1 },
