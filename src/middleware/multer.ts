@@ -1,6 +1,7 @@
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import { Request } from "express-serve-static-core";
 
 // Function to create a Multer instance with a custom path and file type restriction
 const createMulter = (uploadPath: string, fileType: "image" | "audio") => {
@@ -50,6 +51,28 @@ const createMulter = (uploadPath: string, fileType: "image" | "audio") => {
   });
 
   return multer({ storage, fileFilter });
+};
+
+export const deleteUploadedFile = (req: Request): void => {
+  if (req.files) {
+    const files = req.files as {
+      [fieldname: string]: Express.Multer.File[];
+    };
+    console.log("deleteUploadedFile gonna delete: ", files);
+    // Loop through each uploaded file field and delete them
+    Object.values(files).forEach((fileArray) => {
+      fileArray.forEach((file) => {
+        const filePath = file.path; //path.join(__dirname, "..", file.path);
+        fs.unlink(filePath, (err) => {
+          if (err) {
+            console.error(`Error deleting file ${file.filename}:`, err);
+          } else {
+            console.log(`Deleted file ${file.filename} from ${filePath}`);
+          }
+        });
+      });
+    });
+  }
 };
 
 export default createMulter;

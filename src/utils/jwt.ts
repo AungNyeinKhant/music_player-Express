@@ -87,3 +87,31 @@ export const authorize = (allowedRole: Role) => {
     }
   };
 };
+
+export const getTokenData = (
+  req: Request,
+  res: Response
+): AccessPayload | any => {
+  const authHeader = req.headers.authorization;
+
+  if (authHeader) {
+    const token = authHeader.split(" ")[1]; // Bearer <token>
+
+    try {
+      const decodedPayload = jwt.decode(token) as AccessPayload | null;
+
+      if (decodedPayload) {
+        return decodedPayload;
+      } else {
+        return res
+          .status(400)
+          .json({ message: "Invalid token format or missing userId" });
+      }
+    } catch (error) {
+      console.error("Error decoding token:", error);
+      return res.status(400).json({ message: "Invalid token" });
+    }
+  } else {
+    return res.status(401).json({ message: "No token provided" });
+  }
+};

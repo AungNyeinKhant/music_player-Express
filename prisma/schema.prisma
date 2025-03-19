@@ -37,6 +37,7 @@ model User {
 model Track {
   id           String @id @default(auto()) @map("_id") @db.ObjectId
   name         String
+  audio        String
   genre_id     String @db.ObjectId
   album_id     String @db.ObjectId
   artist_id    String @db.ObjectId
@@ -78,7 +79,7 @@ model Artist {
   image      String?
   bg_image   String?
   dob        DateTime?
-  suspended  Boolean @default(false)
+  suspended  Boolean @default(true)
   nrc_front String 
   nrc_back   String?
   fav_count Int @default(0)

@@ -9,6 +9,7 @@ import { AppError, responseFormatter } from "../utils/helper";
 import path from "path";
 import fs from "fs";
 import { BadRequestException } from "../utils/catch-errors";
+import { deleteUploadedFile } from "./multer";
 
 const formatZodError = (res: Response, error: z.ZodError, req: Request) => {
   const errors = error?.issues?.map((err) => ({
@@ -53,19 +54,23 @@ export const errorHandler: ErrorRequestHandler = (
       "Invalid JSON format, please check your request body",
       error.message
     );
+    deleteUploadedFile(req);
     return res.status(HTTPSTATUS.BAD_REQUEST).json(response);
   }
 
   if (error instanceof z.ZodError) {
+    deleteUploadedFile(req);
     return formatZodError(res, error, req);
   }
 
   if (error instanceof AppError) {
+    deleteUploadedFile(req);
     const response = responseFormatter(false, error.message, error.errorCode);
     return res.status(error.statusCode).json(response);
   }
 
   if (error instanceof BadRequestException) {
+    deleteUploadedFile(req);
     return res.status(400).json({
       message: error.message,
       ororCode: error.errorCode,

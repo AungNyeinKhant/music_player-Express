@@ -4,7 +4,7 @@ export type UserRegisterDto = {
   password: string;
 };
 
-export type UserRegisterResponseDto = {
+export type UserLoginDto = {
   email: string;
-  username: string;
+  password: string;
 };
