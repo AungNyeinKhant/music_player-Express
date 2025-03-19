@@ -35,72 +35,39 @@ class ArtistAuthController {
       const body = registerArtistSchema.parse({
         ...req.body,
       });
-      try {
-        const files = req.files as
-          | {
-              [fieldname: string]: Express.Multer.File[];
-            }
-          | undefined;
 
-        const nrcFrontFile = files?.["nrc_front"]
-          ? files["nrc_front"][0]
-          : undefined;
-
-        if (!nrcFrontFile) {
-          return res
-            .status(400)
-            .json(
-              responseFormatter(false, "NRC Front or Passport is required")
-            );
-        }
-
-        const registerData: ArtistRegisterDto = {
-          ...body, // Ensure phone is correctly parsed by Zod
-          image: files?.["image"] ? files["image"][0] : undefined,
-          bg_image: files?.["bg_image"] ? files["bg_image"][0] : undefined,
-          nrc_front: nrcFrontFile,
-          nrc_back: files?.["nrc_back"] ? files["nrc_back"][0] : undefined,
-        };
-
-        const user = await this.authService.registerService(registerData);
-
-        const response = responseFormatter(
-          true,
-          "Artist registered successfully",
-          user
-        );
-        return res.status(HTTPSTATUS.CREATED).json(response);
-      } catch (error) {
-        console.error("Error registering artist:", error);
-
-        if (req.files) {
-          const files = req.files as {
+      const files = req.files as
+        | {
             [fieldname: string]: Express.Multer.File[];
-          };
-          console.log("registering artist Error Files", files);
-          // Loop through each uploaded file field and delete them
-          Object.values(files).forEach((fileArray) => {
-            fileArray.forEach((file) => {
-              const filePath = path.join(__dirname, "..", file.path);
-              fs.unlink(filePath, (err) => {
-                if (err)
-                  console.error(`Error deleting file ${file.filename}:`, err);
-              });
-            });
-          });
-        }
+          }
+        | undefined;
 
-        if (error instanceof BadRequestException) {
-          return res.status(error.statusCode).json({
-            message: error.message,
-            errorCode: error.errorCode,
-          });
-        }
+      const nrcFrontFile = files?.["nrc_front"]
+        ? files["nrc_front"][0]
+        : undefined;
 
+      if (!nrcFrontFile) {
         return res
-          .status(HTTPSTATUS.INTERNAL_SERVER_ERROR)
-          .json(responseFormatter(false, "Failed to register artist"));
+          .status(400)
+          .json(responseFormatter(false, "NRC Front or Passport is required"));
       }
+
+      const registerData: ArtistRegisterDto = {
+        ...body, // Ensure phone is correctly parsed by Zod
+        image: files?.["image"] ? files["image"][0] : undefined,
+        bg_image: files?.["bg_image"] ? files["bg_image"][0] : undefined,
+        nrc_front: nrcFrontFile,
+        nrc_back: files?.["nrc_back"] ? files["nrc_back"][0] : undefined,
+      };
+
+      const user = await this.authService.registerService(registerData);
+
+      const response = responseFormatter(
+        true,
+        "Artist registered successfully",
+        user
+      );
+      return res.status(HTTPSTATUS.CREATED).json(response);
     }
   );
 
@@ -113,15 +80,13 @@ class ArtistAuthController {
       const { user, accessToken, refreshToken } =
         await this.authService.loginService(body);
 
-      return res
-        .status(HTTPSTATUS.OK)
-        .json(
-          responseFormatter(true, "Login successful", {
-            user,
-            accessToken,
-            refreshToken,
-          })
-        );
+      return res.status(HTTPSTATUS.OK).json(
+        responseFormatter(true, "Login successful", {
+          user,
+          accessToken,
+          refreshToken,
+        })
+      );
     }
   );
 }

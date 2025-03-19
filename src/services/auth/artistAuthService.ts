@@ -71,7 +71,7 @@ export default class ArtistAuthService {
 
   public async loginService(loginData: ArtistLoginDto) {
     const { email, password } = loginData;
-    logger.info(`Login attempt for email: ${email}`);
+    logger.info(`Artist Login attempt for email: ${email}`);
     const artist = await prisma.artist.findUnique({
       where: {
         email: email,
@@ -79,7 +79,7 @@ export default class ArtistAuthService {
     });
 
     if (!artist) {
-      logger.warn(`Login failed: artist with email ${email} not found`);
+      logger.warn(`Artist Login failed: artist with email ${email} not found`);
       throw new BadRequestException(
         "Invalid email or password provided",
         ErrorCode.AUTH_USER_NOT_FOUND
