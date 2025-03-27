@@ -1,17 +1,14 @@
 import { NextFunction, Request, Response } from "express-serve-static-core";
 import { asyncHandler } from "../../middleware/asyncHandler";
-import UserAuthService from "../../services/auth/userAuthSerive";
 import {
   loginUserSchema,
   registerUserSchema,
 } from "../../validator/auth.validator";
 import { HTTPSTATUS } from "../../config/http.config";
-import UserAuthService from "../../services/auth/userAuthService";
+
 import { responseFormatter } from "../../utils/helper";
 import { UserRegisterDto } from "../../types/user.dto";
-import path from "path";
-import fs from "fs";
-import { BadRequestException } from "../../utils/catch-errors";
+import UserAuthService from "../../services/auth/userAuthService";
 
 class UserAuthController {
   private authService: UserAuthService;
@@ -22,16 +19,10 @@ class UserAuthController {
 
   public register = asyncHandler(
     async (
-      req: Request<
-        {},
-        {},
-        Omit<UserRegisterDto, "image" | "bg_image" | "nrc_front" | "nrc_back">
-      >,
+      req: Request<{}, {}, Omit<UserRegisterDto, "image">>,
       res: Response,
       next: NextFunction
     ) => {
-      // return res.status(HTTPSTATUS.OK).json({ message: "Hello" });
-
       const body = registerUserSchema.parse({
         ...req.body,
       });
@@ -42,22 +33,11 @@ class UserAuthController {
           }
         | undefined;
 
-      const nrcFrontFile = files?.["nrc_front"]
-        ? files["nrc_front"][0]
-        : undefined;
-
-      if (!nrcFrontFile) {
-        return res
-          .status(400)
-          .json(responseFormatter(false, "NRC Front or Passport is required"));
-      }
+      const imageFile = files?.["image"] ? files["image"][0] : undefined;
 
       const registerData: UserRegisterDto = {
         ...body, // Ensure phone is correctly parsed by Zod
-        image: files?.["image"] ? files["image"][0] : undefined,
-        bg_image: files?.["bg_image"] ? files["bg_image"][0] : undefined,
-        nrc_front: nrcFrontFile,
-        nrc_back: files?.["nrc_back"] ? files["nrc_back"][0] : undefined,
+        image: imageFile,
       };
 
       const user = await this.authService.registerService(registerData);

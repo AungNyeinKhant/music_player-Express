@@ -32,20 +32,9 @@ export default class ArtistAuthService {
         ErrorCode.AUTH_EMAIL_ALREADY_EXISTS
       );
     }
-    console.log("Before hash:");
+
     const hashedPassword = await hashValue(password);
-    console.log("After hash:", hashedPassword);
-    console.log("Before prisma create:", {
-      name,
-      email,
-      phone,
-      password: hashedPassword,
-      dob,
-      image: image?.filename,
-      bg_image: bg_image?.filename,
-      nrc_front: nrc_front?.filename,
-      nrc_back: nrc_back?.filename,
-    });
+
     const newArtist = await prisma.artist.create({
       data: {
         name,
@@ -59,14 +48,18 @@ export default class ArtistAuthService {
         nrc_back: nrc_back?.filename,
       },
     });
-    console.log("After prisma create:", newArtist);
 
+    logger.info(`New Artist created: ${newArtist.id} - ${newArtist.name}`);
+
+    /*
     return {
       name: newArtist.name,
       email: newArtist.email,
       phone: newArtist.phone,
       dob: newArtist.dob,
     };
+    */
+    return this.loginService({ email, password });
   }
 
   public async loginService(loginData: ArtistLoginDto) {
@@ -91,7 +84,7 @@ export default class ArtistAuthService {
       logger.warn(`Login failed: Invalid password for email: ${email}`);
       throw new BadRequestException(
         "Invalid email or password provided",
-        ErrorCode.AUTH_USER_NOT_FOUND
+        ErrorCode.CREDENTIAL_DIDNT_MATCH
       );
     }
 

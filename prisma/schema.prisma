@@ -23,7 +23,7 @@ model User {
   image      String?
   dob        DateTime?
   suspended  Boolean @default(false)
-  valid_until DateTime?
+  valid_until DateTime
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 

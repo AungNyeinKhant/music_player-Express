@@ -2,4 +2,6 @@ package-lock.json
 node_modules
 dist
 .env
-logs/*.json
+logs
+logs/.31eff05ce0eaff1066851bfcbe7d54534dd583bf-audit.json
+logs/.31eff05ce0eaff1066851bfcbe7d54534dd583bf-audit.json

@@ -13,6 +13,7 @@ const enum ErrorCode {
 
   // Validation and Resource Errors
   VALIDATION_ERROR = "VALIDATION_ERROR",
+  CREDENTIAL_DIDNT_MATCH = "CREDENTIAL_DIDN'T_MATCH",
   RESOURCE_NOT_FOUND = "RESOURCE_NOT_FOUND",
 
   // System Errors

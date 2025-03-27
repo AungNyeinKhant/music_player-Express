@@ -10,8 +10,11 @@ const appConfig = () => ({
     SECRET: getEnv("JWT_SECRET", "your_secret_key"),
     EXPIRES_IN: getEnv("JWT_EXPIRES_IN", "86400"), //15 min
     REFRESH_SECRET: getEnv("JWT_REFRESH_SECRET", "your_refresh_secret_key"),
-    REFRESH_EXPIRES_IN: getEnv("JWT_REFRESH_EXPIRES_IN", "30d"),
+    REFRESH_EXPIRES_IN: getEnv("JWT_REFRESH_EXPIRES_IN", "2592000"), //30 days
   },
+  TRENDING_TRACK_WITHIN: getEnv("TRENDING_TRACK_WITHIN", "30"),
+  MOST_LISTEN_TRACK_WITHIN: getEnv("MOST_LISTEN_TRACK_WITHIN", "30"),
+  BACKEND_BASE_URL: getEnv("BACKEND_BASE_URL", "http://localhost:3000"),
 });
 
 export const config = appConfig();

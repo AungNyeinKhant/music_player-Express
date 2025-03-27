@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express-serve-static-core";
 import { asyncHandler } from "../../middleware/asyncHandler";
-import UserAuthService from "../../services/auth/userAuthSerive";
+
 import {
   loginArtistSchema,
   registerArtistSchema,
@@ -9,9 +9,6 @@ import { HTTPSTATUS } from "../../config/http.config";
 import ArtistAuthService from "../../services/auth/artistAuthService";
 import { responseFormatter } from "../../utils/helper";
 import { ArtistRegisterDto } from "../../types/artist.dto";
-import path from "path";
-import fs from "fs";
-import { BadRequestException } from "../../utils/catch-errors";
 
 class ArtistAuthController {
   private authService: ArtistAuthService;
@@ -30,8 +27,6 @@ class ArtistAuthController {
       res: Response,
       next: NextFunction
     ) => {
-      // return res.status(HTTPSTATUS.OK).json({ message: "Hello" });
-
       const body = registerArtistSchema.parse({
         ...req.body,
       });

@@ -12,7 +12,7 @@ export async function createUser(
 ): Promise<any> {
   console.log(req.body);
 
-  const { username, email, password } = req.body as UserRegisterDto;
+  // const { username, email, password } = req.body as UserRegisterDto;
 
   const response = responseFormatter(true, "User created", [req.body]);
   return res.status(201).json(response);
