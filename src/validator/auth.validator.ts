@@ -78,7 +78,7 @@ export const registerUserSchema = z.object({
   phone: phoneNumberSchema,
   password: passwordSchema,
   // image: imageSchema.optional(),
-  dob: z.date(),
+  dob: z.string().trim().min(1).max(50), //z.date(),
 });
 
 export const loginUserSchema = z.object({

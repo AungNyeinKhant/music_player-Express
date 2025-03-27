@@ -10,6 +10,7 @@ import path from "path";
 import fs from "fs";
 import { BadRequestException } from "../utils/catch-errors";
 import { deleteUploadedFile } from "./multer";
+import prisma from "../prisma";
 
 const formatZodError = (res: Response, error: z.ZodError, req: Request) => {
   const errors = error?.issues?.map((err) => ({
@@ -48,6 +49,20 @@ export const errorHandler: ErrorRequestHandler = (
 ): any => {
   console.error(`Error occured on PATH: ${req.path}`, error);
   deleteUploadedFile(req);
+
+  // if (prisma) {
+  //   prisma
+  //     .$disconnect()
+  //     .then(() => {
+  //       console.log("Prisma disconnected successfully in error handler.");
+  //     })
+  //     .catch((disconnectError) => {
+  //       console.error(
+  //         "Error disconnecting Prisma in error handler:",
+  //         disconnectError
+  //       );
+  //     });
+  // }
 
   if (error instanceof SyntaxError) {
     const response = responseFormatter(

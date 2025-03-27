@@ -35,7 +35,7 @@ app.use(`${BASE_PATH}/admin`, adminRouter);
 
 app.use(errorHandler);
 
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use("/uploads", express.static(path.join("uploads")));
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);

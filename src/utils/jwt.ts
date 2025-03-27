@@ -2,6 +2,7 @@ import jwt, { SignOptions, VerifyOptions } from "jsonwebtoken";
 import prisma from "../prisma";
 import { config } from "../config/app.config";
 import { NextFunction, Request, Response } from "express-serve-static-core";
+import userService from "../services/userService";
 
 export type AccessPayload = {
   userId: string;
@@ -61,29 +62,41 @@ export const verifyJwtToken = <TPayload extends object = AccessPayload>(
   }
 };
 
-type Role = "user" | "artist" | "admin";
+type Role = "user" | "validUser" | "artist" | "admin";
 
 export const authorize = (allowedRole: Role) => {
-  return (req: Request, res: Response, next: NextFunction): void => {
+  return async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<any> => {
     const token = req.headers.authorization?.split(" ")[1]; // Extract token from header
 
     if (!token) {
-      res.status(401).json({ message: "No token provided" });
-      return;
+      return res.status(401).json({ message: "No token provided" });
     }
 
     const { payload, error } = verifyJwtToken<AccessPayload>(token);
 
     if (error || !payload) {
-      res.status(401).json({ message: "Invalid token" });
-      return;
+      return res.status(401).json({ message: "Invalid token" });
     }
 
     if (payload.role === allowedRole) {
       next();
+    } else if (payload.role === "user" && allowedRole === "validUser") {
+      const user = await userService.findUser(payload.userId);
+      const now = new Date();
+
+      if (user.valid_until < now) {
+        return res
+          .status(403)
+          .json({ message: "Please extend your subscription." });
+      }
+      next();
+      //check valid logic
     } else {
-      res.status(403).json({ message: "Unauthorize request" });
-      return;
+      return res.status(403).json({ message: "Unauthorize request" });
     }
   };
 };
@@ -98,7 +111,7 @@ export const getTokenData = (
     const token = authHeader.split(" ")[1]; // Bearer <token>
 
     try {
-      const decodedPayload = jwt.decode(token) as AccessPayload | null;
+      const decodedPayload = verifyJwtToken(token);
 
       if (decodedPayload) {
         return decodedPayload;

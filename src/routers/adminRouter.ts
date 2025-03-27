@@ -1,9 +1,10 @@
 import { Router } from "express";
-import { NextFunction, Request, Response } from "express-serve-static-core";
 import { authenticateJWT } from "../strategies/jwt.strategy";
 import { authorize } from "../utils/jwt";
 import adminAuthController from "../controllers/auth/adminAuthController";
 import createMulter from "../middleware/multer";
+import { createGenre } from "../controllers/admin/genreController";
+import { createPackage } from "../controllers/admin/packageController";
 
 const adminRouter = Router();
 
@@ -17,7 +18,25 @@ adminRouter.post(
   createMulter("uploads/admin", "image").fields([
     { name: "image", maxCount: 1 },
   ]),
+  authenticateJWT,
+  authorize("admin"),
   adminAuthController.register
+);
+
+//genre
+adminRouter.post(
+  "/genres/create",
+  authenticateJWT,
+  authorize("admin"),
+  createGenre
+);
+
+//Subscription Packages
+adminRouter.post(
+  "/packages/create",
+  authenticateJWT,
+  authorize("admin"),
+  createPackage
 );
 
 export default adminRouter;
