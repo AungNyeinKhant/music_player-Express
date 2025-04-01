@@ -108,6 +108,7 @@ export default class ArtistAuthService {
 
     return {
       user: {
+        id: artist.id,
         name: artist.name,
         email: artist.email,
         phone: artist.phone,

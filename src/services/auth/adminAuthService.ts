@@ -89,6 +89,7 @@ export default class AdminAuthService {
 
     return {
       admin: {
+        id: admin.id,
         name: admin.name,
         email: admin.email,
         staff_id: admin.staff_id,

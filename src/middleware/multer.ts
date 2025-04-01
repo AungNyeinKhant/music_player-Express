@@ -14,6 +14,7 @@ const createMulter = (uploadPath: string, fileType: "image" | "audio") => {
   const fileFilter = (req: any, file: Express.Multer.File, cb: any) => {
     const imageTypes = [
       "image/jpeg",
+      "image/jpg",
       "image/png",
       "image/gif",
       "image/webp",
@@ -58,7 +59,7 @@ export const deleteUploadedFile = (req: Request): void => {
     const files = req.files as {
       [fieldname: string]: Express.Multer.File[];
     };
-    console.log("deleteUploadedFile gonna delete: ", files);
+
     // Loop through each uploaded file field and delete them
     Object.values(files).forEach((fileArray) => {
       fileArray.forEach((file) => {

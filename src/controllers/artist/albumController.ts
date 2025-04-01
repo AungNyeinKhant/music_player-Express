@@ -17,8 +17,8 @@ export const createAlbum = asyncHandler(
     res: Response,
     next: NextFunction
   ): Promise<any> => {
-    const { userId, role } = getTokenData(req, res);
-    req.body.artist_id = userId;
+    const payload = getTokenData(req, res);
+    req.body.artist_id = payload.userId;
 
     const body = createAlbumSchema.parse({
       ...req.body,

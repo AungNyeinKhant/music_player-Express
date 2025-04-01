@@ -99,6 +99,7 @@ export default class UserAuthService {
 
     return {
       user: {
+        id: user.id,
         name: user.name,
         email: user.email,
         phone: user.phone,

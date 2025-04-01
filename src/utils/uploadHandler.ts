@@ -1,3 +1,4 @@
+/*
 import { v4 as uuidv4 } from "uuid";
 import path from "path";
 import fs from "fs";
@@ -48,3 +49,4 @@ async function storeFile(
 }
 
 export { storeFile, UploadedFileDto };
+*/

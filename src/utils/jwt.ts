@@ -114,7 +114,7 @@ export const getTokenData = (
       const decodedPayload = verifyJwtToken(token);
 
       if (decodedPayload) {
-        return decodedPayload;
+        return decodedPayload.payload;
       } else {
         return res
           .status(400)
