@@ -1,5 +1,6 @@
 import { Router } from "express";
 import {
+  albumList,
   createAlbum,
   getAlbumById,
 } from "../controllers/artist/albumController";
@@ -8,11 +9,12 @@ import createMulter from "../middleware/multer";
 import { authenticateJWT } from "../strategies/jwt.strategy";
 import { authorize } from "../utils/jwt";
 import { createTrack } from "../controllers/artist/trackController";
+import { genreList } from "../controllers/artist/genreController";
 
 const artistRouter = Router();
 
 //customer APIs below
-artistRouter.get("/");
+// artistRouter.get("/");
 artistRouter.get(
   "/album/:id",
   authenticateJWT,
@@ -31,6 +33,7 @@ artistRouter.post(
   ]), //.single("image"),
   artistAuthController.register
 );
+// album api below
 artistRouter.post(
   "/album/create",
   authenticateJWT,
@@ -41,6 +44,8 @@ artistRouter.post(
   ]),
   createAlbum
 );
+artistRouter.get("/albums", authenticateJWT, authorize("artist"), albumList);
+//track api below
 artistRouter.post(
   "/track/create",
   authenticateJWT,
@@ -50,5 +55,8 @@ artistRouter.post(
   ]),
   createTrack
 );
+
+//genre api below
+artistRouter.get("/genres", authenticateJWT, authorize("artist"), genreList);
 
 export default artistRouter;

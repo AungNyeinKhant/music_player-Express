@@ -45,5 +45,18 @@ export const createAlbum = asyncHandler(
 );
 
 export const albumList = asyncHandler(
-  async (req: Request, res: Response, next: NextFunction): Promise<any> => {}
+  async (
+    req: Request<{}, {}, {}, {}>,
+    res: Response,
+    next: NextFunction
+  ): Promise<any> => {
+    const payload = getTokenData(req, res);
+    const artist_id = payload.userId;
+
+    const albums = await albumService.getAlbums(artist_id);
+
+    return res
+      .status(200)
+      .json(responseFormatter(true, "Albums fetched successfully", albums));
+  }
 );

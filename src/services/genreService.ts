@@ -12,6 +12,11 @@ class GenreService {
 
     return newGenre;
   }
+
+  public async getGenres() {
+    const genres = await prisma.genre.findMany();
+    return genres;
+  }
 }
 const genreService = new GenreService();
 export default genreService;

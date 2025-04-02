@@ -11,6 +11,7 @@ import {
   recentTracks,
   trendingTracks,
 } from "../controllers/user/trackController";
+import { albumList } from "../controllers/user/albumController";
 
 const userRouter = Router();
 
@@ -50,5 +51,8 @@ userRouter.get(
   authorize("validUser"),
   recentTracks
 );
+
+//album Api below
+userRouter.get("/albums", authenticateJWT, authorize("validUser"), albumList);
 
 export default userRouter;

@@ -3,6 +3,15 @@ import { asyncHandler } from "../../middleware/asyncHandler";
 import { responseFormatter } from "../../utils/helper";
 import genreService from "../../services/genreService";
 
+export const genreList = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+    const genres = await genreService.getGenres();
+    return res
+      .status(200)
+      .json(responseFormatter(true, "Genres fetched successfully", genres));
+  }
+);
+
 export const createGenre = asyncHandler(
   async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     const name = req.body.name;
