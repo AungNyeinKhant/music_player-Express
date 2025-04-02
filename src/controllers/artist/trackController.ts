@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response } from "express";
+import { NextFunction, Request, Response } from "express-serve-static-core";
 import { asyncHandler } from "../../middleware/asyncHandler";
 import { getTokenData } from "../../utils/jwt";
 import {
@@ -8,6 +8,27 @@ import {
 import { TrackDto } from "../../types/track.dto";
 import trackService from "../../services/trackService";
 import { responseFormatter } from "../../utils/helper";
+
+export const getTracksByAlbumId = asyncHandler(
+  async (
+    req: Request<{}, {}, {}, { album_id?: string }>,
+    res: Response,
+    next: NextFunction
+  ): Promise<any> => {
+    const { album_id } = req.query;
+
+    if (!album_id) {
+      return res
+        .status(400)
+        .json(responseFormatter(false, "Album ID is required"));
+    }
+
+    const tracks = await trackService.getTracksByAlbumId(album_id);
+    return res
+      .status(200)
+      .json(responseFormatter(true, "Tracks fetched successfully", tracks));
+  }
+);
 
 export const createTrack = asyncHandler(
   async (req: Request, res: Response, next: NextFunction): Promise<any> => {

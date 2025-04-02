@@ -8,7 +8,10 @@ import artistAuthController from "../controllers/auth/artistAuthController";
 import createMulter from "../middleware/multer";
 import { authenticateJWT } from "../strategies/jwt.strategy";
 import { authorize } from "../utils/jwt";
-import { createTrack } from "../controllers/artist/trackController";
+import {
+  createTrack,
+  getTracksByAlbumId,
+} from "../controllers/artist/trackController";
 import { genreList } from "../controllers/artist/genreController";
 
 const artistRouter = Router();
@@ -55,8 +58,14 @@ artistRouter.post(
   ]),
   createTrack
 );
+artistRouter.get(
+  "/tracks",
+  authenticateJWT,
+  authorize("artist"),
+  getTracksByAlbumId
+);
 
 //genre api below
-artistRouter.get("/genres", authenticateJWT, authorize("artist"), genreList);
+artistRouter.get("/genres", genreList);
 
 export default artistRouter;
