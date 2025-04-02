@@ -20,7 +20,8 @@ app.use(
   cors({
     origin: config.ALLOW_ORIGIN, //["http://localhost:3000", "https://yourdomain.com"],
     methods: ["GET", "POST", "PUT", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    allowedHeaders: ["Content-Type", "Authorization"], //, "Range", "Accept"
+    // exposedHeaders: ["Content-Range", "Content-Length", "Accept-Ranges"],
     credentials: true,
     maxAge: 86400, // 24 hours
   })
@@ -35,8 +36,21 @@ app.use(`${BASE_PATH}/admin`, adminRouter);
 
 app.use(errorHandler);
 
-app.use("/uploads", express.static(path.join("uploads")));
-
+// app.use("/uploads", express.static(path.join("uploads")));
+app.use(
+  "/uploads",
+  (req, res, next) => {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Range");
+    res.header(
+      "Access-Control-Expose-Headers",
+      "Content-Range, Content-Length, Accept-Ranges"
+    );
+    res.header("Cross-Origin-Resource-Policy", "cross-origin");
+    next();
+  },
+  express.static(path.join("uploads"))
+);
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
