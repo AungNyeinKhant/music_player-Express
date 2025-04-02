@@ -23,6 +23,7 @@ const createMulter = (uploadPath: string, fileType: "image" | "audio") => {
       "image/svg+xml",
       "image/x-icon",
       "image/heic",
+      "image/jfif",
     ];
     const audioTypes = ["audio/mpeg"]; // Only allow MP3
 

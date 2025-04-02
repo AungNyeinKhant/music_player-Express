@@ -31,6 +31,7 @@ export const imageSchema = z.object({
     "image/svg+xml",
     "image/bmp",
     "image/tiff",
+    "image/jfif"
   ]),
   size: z
     .number()
