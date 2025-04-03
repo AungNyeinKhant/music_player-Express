@@ -3,5 +3,5 @@ node_modules
 dist
 .env
 logs
-logs/.31eff05ce0eaff1066851bfcbe7d54534dd583bf-audit.json
-logs/.31eff05ce0eaff1066851bfcbe7d54534dd583bf-audit.json
+tsconfig.tsbuildinfo
+# uploads

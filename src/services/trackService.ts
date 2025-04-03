@@ -78,7 +78,7 @@ class TrackService {
   }
 
   public async playTrack(data: PlayTrackDto) {
-    const { user_id, track_id, album_id, genre_id } = data;
+    const { user_id, track_id } = data;
 
     const play = await prisma.$transaction(async (prisma) => {
       const currentTrack = await prisma.track.findUnique({
@@ -97,19 +97,59 @@ class TrackService {
       const updatedTrack = await prisma.track.update({
         where: { id: track_id },
         data: { listen_count: currentTrack.listen_count + 1 },
+        include: {
+          artist: {
+            select: {
+              name: true,
+              image: true,
+            },
+          },
+          genre: {
+            select: {
+              name: true,
+            },
+          },
+          album: {
+            select: {
+              name: true,
+              image: true,
+            },
+          },
+        },
       });
 
       const playHistory = await prisma.playHistory.create({
         data: {
           user_id,
           track_id,
-          album_id,
-          genre_id,
+          album_id: updatedTrack.album_id,
+          genre_id: updatedTrack.genre_id,
         },
       });
       // Add more Prisma client operations here
 
-      return { track: updatedTrack };
+      return {
+        ...updatedTrack,
+        audio: updatedTrack.audio
+          ? `${config.BACKEND_BASE_URL}/uploads/track/${updatedTrack.audio}`
+          : null,
+        artist: updatedTrack.artist
+          ? {
+              ...updatedTrack.artist,
+              image: updatedTrack.artist.image
+                ? `${config.BACKEND_BASE_URL}/uploads/artist/${updatedTrack.artist.image}`
+                : null,
+            }
+          : null,
+        album: updatedTrack.album
+          ? {
+              ...updatedTrack.album,
+              image: updatedTrack.album.image
+                ? `${config.BACKEND_BASE_URL}/uploads/album/${updatedTrack.album.image}`
+                : null,
+            }
+          : null,
+      };
     });
 
     return play;
@@ -231,9 +271,51 @@ class TrackService {
           in: trackIds,
         },
       },
+      include: {
+        artist: {
+          select: {
+            name: true,
+            image: true,
+          },
+        },
+        genre: {
+          select: {
+            name: true,
+          },
+        },
+        album: {
+          select: {
+            name: true,
+            image: true,
+          },
+        },
+      },
     });
 
-    return tracksDetail;
+    const processedTracks = tracksDetail.map((track) => ({
+      ...track,
+      audio: track.audio
+        ? `${config.BACKEND_BASE_URL}/uploads/track/${track.audio}`
+        : null,
+      artist: track.artist
+        ? {
+            ...track.artist,
+            image: track.artist.image
+              ? `${config.BACKEND_BASE_URL}/uploads/artist/${track.artist.image}`
+              : null,
+          }
+        : null,
+      album: track.album
+        ? {
+            ...track.album,
+            image: track.album.image
+              ? `${config.BACKEND_BASE_URL}/uploads/album/${track.album.image}`
+              : null,
+          }
+        : null,
+    }));
+
+    return processedTracks;
   }
 }
 const trackService = new TrackService();
