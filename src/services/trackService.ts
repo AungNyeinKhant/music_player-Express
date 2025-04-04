@@ -176,25 +176,68 @@ class TrackService {
       },
       skip: skip,
       take: take,
-    });
-
-    const totalCount = await prisma.track.count({
-      where: {
-        created_at: {
-          gte: startTrendDate,
+      include: {
+        artist: {
+          select: {
+            name: true,
+            image: true,
+          },
+        },
+        genre: {
+          select: {
+            name: true,
+          },
+        },
+        album: {
+          select: {
+            name: true,
+            image: true,
+          },
         },
       },
     });
 
-    const totalPages = Math.ceil(totalCount / parseInt(limit));
-    const currentPage = offset;
+    const processedTracks = trendingTracks.map((track) => ({
+      ...track,
+      audio: track.audio
+        ? `${config.BACKEND_BASE_URL}/uploads/track/${track.audio}`
+        : null,
+      artist: track.artist
+        ? {
+            ...track.artist,
+            image: track.artist.image
+              ? `${config.BACKEND_BASE_URL}/uploads/artist/${track.artist.image}`
+              : null,
+          }
+        : null,
+      album: track.album
+        ? {
+            ...track.album,
+            image: track.album.image
+              ? `${config.BACKEND_BASE_URL}/uploads/album/${track.album.image}`
+              : null,
+          }
+        : null,
+    }));
 
-    return {
-      trendingTracks,
-      totalCount,
-      totalPages,
-      currentPage,
-    };
+    // const totalCount = await prisma.track.count({
+    //   where: {
+    //     created_at: {
+    //       gte: startTrendDate,
+    //     },
+    //   },
+    // });
+
+    // const totalPages = Math.ceil(totalCount / parseInt(limit));
+    // const currentPage = offset;
+
+    // return {
+    //   trendingTracks,
+    //   totalCount,
+    //   totalPages,
+    //   currentPage,
+    // };
+    return processedTracks;
   }
 
   public async getMostListenTrack(data: { limit: any }) {
@@ -206,7 +249,7 @@ class TrackService {
 
     const take = parseInt(limit);
 
-    //most played tracks
+    // Get most played tracks
     const mostListenTracks = await prisma.playHistory.groupBy({
       by: ["track_id"],
       where: {
@@ -224,30 +267,68 @@ class TrackService {
       },
       take: take,
     });
-    //add tracks details
-    let mostListenTracksDetail = [];
-    for (let i = 0; i < mostListenTracks.length; i++) {
-      let track = mostListenTracks[i];
-      let trackDetail = await prisma.track.findUnique({
-        where: { id: track.track_id },
-      });
-      let album = await prisma.album.findUnique({
-        where: { id: trackDetail?.album_id },
-      });
-      if (!trackDetail) {
-        throw new InternalServerException();
-      }
-      mostListenTracksDetail.push({
-        ...trackDetail,
-        image: album?.image
-          ? `${config.BACKEND_BASE_URL}/uploads/album/${album?.image}`
-          : null,
-        audio: `${config.BACKEND_BASE_URL}/uploads/track/${trackDetail.audio}`,
-        count: track._count.track_id,
-      });
-    }
 
-    return mostListenTracksDetail;
+    // Get detailed track information with related data
+    const trackIds = mostListenTracks.map((track) => track.track_id);
+    const tracksWithDetails = await prisma.track.findMany({
+      where: {
+        id: {
+          in: trackIds,
+        },
+      },
+      include: {
+        artist: {
+          select: {
+            name: true,
+            image: true,
+          },
+        },
+        genre: {
+          select: {
+            name: true,
+          },
+        },
+        album: {
+          select: {
+            name: true,
+            image: true,
+          },
+        },
+      },
+    });
+
+    // Process and format track details
+    const processedTracks = tracksWithDetails.map((track) => {
+      const playCount =
+        mostListenTracks.find((t) => t.track_id === track.id)?._count
+          .track_id || 0;
+      return {
+        ...track,
+        audio: track.audio
+          ? `${config.BACKEND_BASE_URL}/uploads/track/${track.audio}`
+          : null,
+        artist: track.artist
+          ? {
+              ...track.artist,
+              image: track.artist.image
+                ? `${config.BACKEND_BASE_URL}/uploads/artist/${track.artist.image}`
+                : null,
+            }
+          : null,
+        album: track.album
+          ? {
+              ...track.album,
+              image: track.album.image
+                ? `${config.BACKEND_BASE_URL}/uploads/album/${track.album.image}`
+                : null,
+            }
+          : null,
+        count: playCount,
+      };
+    });
+
+    // Sort by play count to maintain order
+    return processedTracks.sort((a, b) => b.count - a.count);
   }
 
   public async getRecentTracks(data: { limit: any; userId: string }) {
