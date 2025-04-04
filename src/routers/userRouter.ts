@@ -12,6 +12,7 @@ import {
   trendingTracks,
 } from "../controllers/user/trackController";
 import { albumList } from "../controllers/user/albumController";
+import { getPackages } from "../controllers/user/packageController";
 
 const userRouter = Router();
 
@@ -30,6 +31,9 @@ userRouter.post(
 //subscription api
 userRouter.get("/subscription", authenticateJWT, authorize("user"), playTrack);
 userRouter.post("/subscribe", authenticateJWT, authorize("user"), playTrack);
+
+// package APIs
+userRouter.get("/packages", authenticateJWT, authorize("user"), getPackages);
 
 // track APIs below
 userRouter.post("/play", authenticateJWT, authorize("validUser"), playTrack);
