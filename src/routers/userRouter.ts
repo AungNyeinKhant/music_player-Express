@@ -12,7 +12,10 @@ import {
   trendingTracks,
 } from "../controllers/user/trackController";
 import { albumList } from "../controllers/user/albumController";
-import { getPackages } from "../controllers/user/packageController";
+import {
+  getPackages,
+  subscribePackage,
+} from "../controllers/user/packageController";
 
 const userRouter = Router();
 
@@ -29,11 +32,20 @@ userRouter.post(
   userAuthController.register
 );
 //subscription api
-userRouter.get("/subscription", authenticateJWT, authorize("user"), playTrack);
-userRouter.post("/subscribe", authenticateJWT, authorize("user"), playTrack);
+// userRouter.get("/subscription", authenticateJWT, authorize("user"), playTrack);
+// userRouter.post("/subscribe", authenticateJWT, authorize("user"), playTrack);
 
 // package APIs
 userRouter.get("/packages", authenticateJWT, authorize("user"), getPackages);
+userRouter.post(
+  "/subscribe-package",
+  authenticateJWT,
+  authorize("user"),
+  createMulter("uploads/transitions", "image").fields([
+    { name: "transition", maxCount: 1 },
+  ]),
+  subscribePackage
+);
 
 // track APIs below
 userRouter.post("/play", authenticateJWT, authorize("validUser"), playTrack);

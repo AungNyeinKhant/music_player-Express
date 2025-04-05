@@ -4,7 +4,10 @@ import { authorize } from "../utils/jwt";
 import adminAuthController from "../controllers/auth/adminAuthController";
 import createMulter from "../middleware/multer";
 import { createGenre } from "../controllers/admin/genreController";
-import { createPackage } from "../controllers/admin/packageController";
+import {
+  confirmPurchase,
+  createPackage,
+} from "../controllers/admin/packageController";
 
 const adminRouter = Router();
 
@@ -37,6 +40,13 @@ adminRouter.post(
   authenticateJWT,
   authorize("admin"),
   createPackage
+);
+//accept purchase
+adminRouter.post(
+  "/purchase/handle",
+  authenticateJWT,
+  authorize("admin"),
+  confirmPurchase
 );
 
 export default adminRouter;

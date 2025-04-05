@@ -6,3 +6,7 @@ export const createPackageSchema = z.object({
   num_of_days: z.number().positive(),
   price: z.number().positive().multipleOf(0.01),
 });
+
+export const confirmPurchaseSchema = z.object({
+  purchase_id: z.string().trim().min(1),
+});

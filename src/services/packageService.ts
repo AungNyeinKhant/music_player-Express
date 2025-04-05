@@ -21,6 +21,79 @@ class PackageService {
 
     return newPackage;
   }
+
+  public async subscribePackage(
+    user_id: string,
+    packageId: string,
+    transition: Express.Multer.File
+  ) {
+    console.log(transition);
+    const subscribePackage = await prisma.packages.findUnique({
+      where: { id: packageId },
+    });
+
+    if (!subscribePackage) {
+      throw new Error("Package not found");
+    }
+
+    const purchase = await prisma.purchase.create({
+      data: {
+        user_id: user_id,
+        package_id: subscribePackage.id,
+        num_of_days: subscribePackage.num_of_days,
+        price: subscribePackage.price,
+        transition: transition.filename,
+      },
+    });
+
+    return purchase;
+  }
+
+  public async confirmPurchase(purchase_id: string) {
+    const purchase = await prisma.purchase.findUnique({
+      where: { id: purchase_id },
+      include: {
+        user: true,
+      },
+    });
+
+    if (!purchase || purchase.status === "APPROVED") {
+      throw new Error("Something went wrong");
+    }
+
+    const currentDate = new Date();
+    let newValidUntil: Date;
+
+    if (purchase.user.valid_until < currentDate) {
+      // If valid_until is in the past, start from current date
+      newValidUntil = new Date(
+        currentDate.getTime() + purchase.num_of_days * 24 * 60 * 60 * 1000
+      );
+    } else {
+      // If valid_until is in the future, add days to existing valid_until
+      newValidUntil = new Date(
+        purchase.user.valid_until.getTime() +
+          purchase.num_of_days * 24 * 60 * 60 * 1000
+      );
+    }
+
+    // Update both purchase status and user's valid_until date in a transaction
+    const result = await prisma.$transaction(async (tx) => {
+      const confirmedPurchase = await tx.purchase.update({
+        where: { id: purchase_id },
+        data: { status: "APPROVED" },
+      });
+
+      const updatedUser = await tx.user.update({
+        where: { id: purchase.user_id },
+        data: { valid_until: newValidUntil },
+      });
+
+      return { confirmedPurchase, updatedUser };
+    });
+
+    return result;
+  }
 }
 const packageService = new PackageService();
 export default packageService;

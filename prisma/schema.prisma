@@ -187,6 +187,7 @@ model Purchase {
   package_id  String @db.ObjectId
   num_of_days Int
   price       Int
+  transition   String
   status      PurchaseStatus @default(PENDING)
   created_at  DateTime @default(now())
 
