@@ -7,6 +7,7 @@ import { createGenre } from "../controllers/admin/genreController";
 import {
   confirmPurchase,
   createPackage,
+  purchaseList,
 } from "../controllers/admin/packageController";
 
 const adminRouter = Router();
@@ -42,6 +43,7 @@ adminRouter.post(
   createPackage
 );
 //accept purchase
+adminRouter.get("/purchase", authenticateJWT, authorize("admin"), purchaseList);
 adminRouter.post(
   "/purchase/handle",
   authenticateJWT,

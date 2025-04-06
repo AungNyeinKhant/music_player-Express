@@ -1,3 +1,4 @@
+import { config } from "../config/app.config";
 import prisma from "../prisma";
 import { PackageDto } from "../types/package.dto";
 
@@ -49,7 +50,41 @@ class PackageService {
     return purchase;
   }
 
-  public async confirmPurchase(purchase_id: string) {
+  public async getPurchaseList() {
+    const purchases = await prisma.purchase.findMany({
+      orderBy: {
+        created_at: "desc",
+      },
+      select: {
+        id: true,
+        package_id: true,
+        num_of_days: true,
+        price: true,
+        status: true,
+        transition: true,
+        created_at: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true,
+          },
+        },
+        package: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    });
+    return purchases.map((purchase) => ({
+      ...purchase,
+      transition: `${config.BACKEND_BASE_URL}/uploads/transitions/${purchase.transition}`,
+    }));
+  }
+
+  public async confirmPurchase(purchase_id: string, reject?: boolean) {
     const purchase = await prisma.purchase.findUnique({
       where: { id: purchase_id },
       include: {
@@ -57,8 +92,20 @@ class PackageService {
       },
     });
 
-    if (!purchase || purchase.status === "APPROVED") {
+    if (
+      !purchase ||
+      purchase.status === "APPROVED" ||
+      purchase.status === "REJECTED"
+    ) {
       throw new Error("Something went wrong");
+    }
+
+    if (reject) {
+      const rejectedPurchase = await prisma.purchase.update({
+        where: { id: purchase_id },
+        data: { status: "REJECTED" },
+      });
+      return { rejectedPurchase };
     }
 
     const currentDate = new Date();

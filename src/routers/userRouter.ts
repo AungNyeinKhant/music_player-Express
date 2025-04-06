@@ -19,6 +19,9 @@ import {
 
 const userRouter = Router();
 
+//refresh token api
+userRouter.post("/auth/refresh-token", userAuthController.refreshToken);
+
 //user APIs below
 userRouter.get("/", getUser);
 // userRouter.get("/:id");

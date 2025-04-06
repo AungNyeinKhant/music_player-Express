@@ -9,4 +9,5 @@ export const createPackageSchema = z.object({
 
 export const confirmPurchaseSchema = z.object({
   purchase_id: z.string().trim().min(1),
+  reject: z.boolean().optional(),
 });

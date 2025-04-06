@@ -69,6 +69,26 @@ class UserAuthController {
       );
     }
   );
+
+  public refreshToken = asyncHandler(
+    async (req: Request<{},{},{refreshToken:string}>, res: Response, next: NextFunction): Promise<any> => {
+      const { refreshToken } = req.body;
+      if(!refreshToken){
+        return res.status(HTTPSTATUS.BAD_REQUEST).json(
+          responseFormatter(false, "Refresh token is required", null)
+        );
+      }
+      const { role, accessToken, id } =
+        await this.authService.refreshTokenService(refreshToken);
+      return res.status(HTTPSTATUS.OK).json(
+        responseFormatter(true, "Token refreshed successfully", {
+          role,
+          accessToken,
+          userId:id,
+        })
+      );
+    }
+  );
 }
 
 const userAuthService = new UserAuthService();
