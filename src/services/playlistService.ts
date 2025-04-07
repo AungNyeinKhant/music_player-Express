@@ -37,8 +37,24 @@ class PlaylistService {
     }
   }
 
-  async addTrackToPlaylist(playlist_id: string, track_id: string) {
+  async handleTrackToPlaylist(playlist_id: string, track_id: string) {
     try {
+      const existingTrack = await prisma.playlistTrack.findFirst({
+        where: {
+          playlist_id,
+          track_id,
+        },
+      });
+
+      if (existingTrack) {
+        await prisma.playlistTrack.delete({
+          where: {
+            id: existingTrack.id,
+          },
+        });
+        return { message: "Track removed from playlist" };
+      }
+
       const playlistTrack = await prisma.playlistTrack.create({
         data: {
           playlist_id,
@@ -49,7 +65,7 @@ class PlaylistService {
           playlist: true,
         },
       });
-      return playlistTrack;
+      return { message: "Track added to playlist" };
     } catch (error) {
       throw error;
     }

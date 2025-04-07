@@ -19,7 +19,7 @@ import {
 import {
   createPlaylist,
   getPlaylists,
-  addTrackToPlaylist,
+  handleTrack_Playlist,
 } from "../controllers/user/playlistController";
 
 const userRouter = Router();
@@ -95,10 +95,10 @@ userRouter.get(
 );
 
 userRouter.post(
-  "/playlists/add-track",
+  "/playlists/handle-track",
   authenticateJWT,
   authorize("validUser"),
-  addTrackToPlaylist
+  handleTrack_Playlist
 );
 
 export default userRouter;

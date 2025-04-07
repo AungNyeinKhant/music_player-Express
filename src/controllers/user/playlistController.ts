@@ -46,7 +46,7 @@ export const createPlaylist = asyncHandler(
   }
 );
 
-export const addTrackToPlaylist = asyncHandler(
+export const handleTrack_Playlist = asyncHandler(
   async (
     req: Request<{}, {}, { playlist_id: string; track_id: string }>,
     res: Response,
@@ -62,7 +62,7 @@ export const addTrackToPlaylist = asyncHandler(
         );
     }
 
-    const playlistTrack = await playlistService.addTrackToPlaylist(
+    const playlistTrack = await playlistService.handleTrackToPlaylist(
       playlist_id,
       track_id
     );
