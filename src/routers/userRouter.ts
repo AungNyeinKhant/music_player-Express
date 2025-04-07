@@ -16,6 +16,11 @@ import {
   getPackages,
   subscribePackage,
 } from "../controllers/user/packageController";
+import {
+  createPlaylist,
+  getPlaylists,
+  addTrackToPlaylist,
+} from "../controllers/user/playlistController";
 
 const userRouter = Router();
 
@@ -73,5 +78,27 @@ userRouter.get(
 
 //album Api below
 userRouter.get("/albums", authenticateJWT, authorize("validUser"), albumList);
+
+//playlist APIs
+userRouter.post(
+  "/playlists",
+  authenticateJWT,
+  authorize("validUser"),
+  createPlaylist
+);
+
+userRouter.get(
+  "/playlists",
+  authenticateJWT,
+  authorize("validUser"),
+  getPlaylists
+);
+
+userRouter.post(
+  "/playlists/add-track",
+  authenticateJWT,
+  authorize("validUser"),
+  addTrackToPlaylist
+);
 
 export default userRouter;

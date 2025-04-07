@@ -3,7 +3,12 @@ import prisma from "../../prisma";
 import { UserLoginDto, UserRegisterDto } from "../../types/user.dto";
 import { BadRequestException } from "../../utils/catch-errors";
 import { compareValue, hashValue } from "../../utils/helper";
-import { refreshTokenSignOptions, signJwtToken, verifyJwtToken, RefreshPayload } from "../../utils/jwt";
+import {
+  refreshTokenSignOptions,
+  signJwtToken,
+  verifyJwtToken,
+  RefreshPayload,
+} from "../../utils/jwt";
 import { logger } from "../../utils/logger";
 import { config } from "../../config/app.config";
 
@@ -96,7 +101,7 @@ export default class UserAuthService {
     const refreshToken = signJwtToken(
       {
         userId: user.id,
-        role: "artist",
+        role: "user",
         sessionId: 0,
       },
       refreshTokenSignOptions
@@ -117,15 +122,22 @@ export default class UserAuthService {
     };
   }
 
-  public async refreshTokenService(refreshToken: string): Promise<RefreshTokenResponse> {
+  public async refreshTokenService(
+    refreshToken: string
+  ): Promise<RefreshTokenResponse> {
     // Verify the refresh token
     const { payload, error } = verifyJwtToken<RefreshPayload>(refreshToken, {
-      secret: config.JWT.REFRESH_SECRET
+      secret: config.JWT.REFRESH_SECRET,
     });
-    logger.info('Attempting to refresh access token for role', payload?.role, "and id", payload?.userId);
+    logger.info(
+      "Attempting to refresh access token for role",
+      payload?.role,
+      "and id",
+      payload?.userId
+    );
 
     if (error || !payload) {
-      logger.warn('Invalid refresh token provided');
+      logger.warn("Invalid refresh token provided");
       throw new BadRequestException(
         "Invalid refresh token",
         ErrorCode.AUTH_INVALID_TOKEN
@@ -134,7 +146,7 @@ export default class UserAuthService {
 
     let user;
     // Find the user based on the role and ID from the refresh token
-    if(payload.role === "user"){
+    if (payload.role === "user") {
       user = await prisma.user.findUnique({
         where: {
           id: payload.userId,
@@ -161,7 +173,7 @@ export default class UserAuthService {
         id: payload.userId,
         accessToken,
       };
-    } else if(payload.role === "artist"){
+    } else if (payload.role === "artist") {
       user = await prisma.artist.findUnique({
         where: {
           id: payload.userId,
@@ -188,7 +200,7 @@ export default class UserAuthService {
         id: payload.userId,
         accessToken,
       };
-    } else if(payload.role === "admin"){
+    } else if (payload.role === "admin") {
       user = await prisma.admin.findUnique({
         where: {
           id: payload.userId,
