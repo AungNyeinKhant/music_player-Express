@@ -12,6 +12,9 @@ import {
 import {
   getPlayCountAnalytics,
   getPurchaseAnalytics,
+  getTopAlbums,
+  getTopArtists,
+  getTopGenres,
 } from "../controllers/admin/analyticsController";
 
 const adminRouter = Router();
@@ -68,6 +71,27 @@ adminRouter.get(
   authenticateJWT,
   authorize("admin"),
   getPurchaseAnalytics
+);
+
+adminRouter.get(
+  "/analytics/artists",
+  authenticateJWT,
+  authorize("admin"),
+  getTopArtists
+);
+
+adminRouter.get(
+  "/analytics/genres",
+  authenticateJWT,
+  authorize("admin"),
+  getTopGenres
+);
+
+adminRouter.get(
+  "/analytics/albums",
+  authenticateJWT,
+  authorize("admin"),
+  getTopAlbums
 );
 
 export default adminRouter;
