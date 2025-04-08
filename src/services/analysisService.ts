@@ -8,7 +8,7 @@ interface AnalyticsParams {
 }
 
 interface AnalyticsResponse {
-  labels: number[];
+  labels: number[] | string[];
   data: TopItemAnalyticsResponse[][];
 }
 
@@ -17,6 +17,21 @@ interface TopItemAnalyticsResponse {
   name: string;
   count: number;
 }
+
+const MONTH_LABELS = [
+  "JAN",
+  "FEB",
+  "MAR",
+  "APR",
+  "MAY",
+  "JUN",
+  "JUL",
+  "AUG",
+  "SEP",
+  "OCT",
+  "NOV",
+  "DEC",
+];
 
 class AnalysisService {
   public async getPlayCountAnalytics(
@@ -67,7 +82,10 @@ class AnalysisService {
           );
 
     const analytics = {
-      labels: Array.from({ length: periodLength }, (_, i) => i + 1),
+      labels:
+        type === "monthly"
+          ? Array.from({ length: periodLength }, (_, i) => i + 1)
+          : MONTH_LABELS,
       data: Array(periodLength).fill(0),
     };
 
@@ -153,11 +171,17 @@ class AnalysisService {
 
     const analytics = {
       counts: {
-        labels: Array.from({ length: periodLength }, (_, i) => i + 1),
+        labels:
+          type === "monthly"
+            ? Array.from({ length: periodLength }, (_, i) => i + 1)
+            : MONTH_LABELS,
         data: Array(periodLength).fill(0),
       },
       amounts: {
-        labels: Array.from({ length: periodLength }, (_, i) => i + 1),
+        labels:
+          type === "monthly"
+            ? Array.from({ length: periodLength }, (_, i) => i + 1)
+            : MONTH_LABELS,
         data: Array(periodLength).fill(0),
       },
     };
@@ -240,7 +264,7 @@ class AnalysisService {
     );
 
     return {
-      labels: monthsToProcess,
+      labels: type === "monthly" ? monthsToProcess : MONTH_LABELS,
       data: monthlyData,
     };
   }
@@ -307,7 +331,7 @@ class AnalysisService {
     );
 
     return {
-      labels: monthsToProcess,
+      labels: type === "monthly" ? monthsToProcess : MONTH_LABELS,
       data: monthlyData,
     };
   }
@@ -374,7 +398,7 @@ class AnalysisService {
     );
 
     return {
-      labels: monthsToProcess,
+      labels: type === "monthly" ? monthsToProcess : MONTH_LABELS,
       data: monthlyData,
     };
   }
