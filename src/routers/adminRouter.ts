@@ -9,6 +9,10 @@ import {
   createPackage,
   purchaseList,
 } from "../controllers/admin/packageController";
+import {
+  getPlayCountAnalytics,
+  getPurchaseAnalytics,
+} from "../controllers/admin/analyticsController";
 
 const adminRouter = Router();
 
@@ -49,6 +53,21 @@ adminRouter.post(
   authenticateJWT,
   authorize("admin"),
   confirmPurchase
+);
+
+// Analytics Routes
+adminRouter.get(
+  "/analytics/plays",
+  authenticateJWT,
+  authorize("admin"),
+  getPlayCountAnalytics
+);
+
+adminRouter.get(
+  "/analytics/purchases",
+  authenticateJWT,
+  authorize("admin"),
+  getPurchaseAnalytics
 );
 
 export default adminRouter;
