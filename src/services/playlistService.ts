@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import { config } from "../config/app.config";
 
 const prisma = new PrismaClient();
 
@@ -26,12 +27,62 @@ class PlaylistService {
         include: {
           playlist_tracks: {
             include: {
-              track: true,
+              track: {
+                include: {
+                  artist: {
+                    select: {
+                      name: true,
+                      image: true,
+                    },
+                  },
+                  genre: {
+                    select: {
+                      name: true,
+                    },
+                  },
+                  album: {
+                    select: {
+                      name: true,
+                      image: true,
+                    },
+                  },
+                },
+              },
             },
           },
         },
       });
-      return playlists;
+
+      const processedPlaylists = playlists.map((playlist) => ({
+        ...playlist,
+        playlist_tracks: playlist.playlist_tracks.map((pt) => ({
+          ...pt,
+          track: {
+            ...pt.track,
+            audio: pt.track.audio
+              ? `${config.BACKEND_BASE_URL}/uploads/track/${pt.track.audio}`
+              : null,
+            artist: pt.track.artist
+              ? {
+                  ...pt.track.artist,
+                  image: pt.track.artist.image
+                    ? `${config.BACKEND_BASE_URL}/uploads/artist/${pt.track.artist.image}`
+                    : null,
+                }
+              : null,
+            album: pt.track.album
+              ? {
+                  ...pt.track.album,
+                  image: pt.track.album.image
+                    ? `${config.BACKEND_BASE_URL}/uploads/album/${pt.track.album.image}`
+                    : null,
+                }
+              : null,
+          },
+        })),
+      }));
+
+      return processedPlaylists;
     } catch (error) {
       throw error;
     }

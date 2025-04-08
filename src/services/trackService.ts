@@ -396,7 +396,12 @@ class TrackService {
         : null,
     }));
 
-    return processedTracks;
+    // Sort processedTracks to match the order of trackIds
+    const orderedTracks = trackIds
+      .map((id) => processedTracks.find((track) => track.id === id))
+      .filter((track) => track !== undefined);
+
+    return orderedTracks;
   }
 }
 const trackService = new TrackService();
