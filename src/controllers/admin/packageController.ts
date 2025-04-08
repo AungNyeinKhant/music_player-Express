@@ -1,7 +1,10 @@
 import { NextFunction, Request, Response } from "express-serve-static-core";
 import { asyncHandler } from "../../middleware/asyncHandler";
 import { responseFormatter } from "../../utils/helper";
-import { createPackageSchema } from "../../validator/package.validator";
+import {
+  confirmPurchaseSchema,
+  createPackageSchema,
+} from "../../validator/package.validator";
 import packageService from "../../services/packageService";
 
 export const createPackage = asyncHandler(
@@ -16,6 +19,37 @@ export const createPackage = asyncHandler(
       .status(201)
       .json(
         responseFormatter(true, "Package created successfully", newPackage)
+      );
+  }
+);
+
+export const confirmPurchase = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+    const { purchase_id, reject } = confirmPurchaseSchema.parse(req.body);
+
+    const confirmedPurchase = await packageService.confirmPurchase(
+      purchase_id,
+      reject
+    );
+
+    const message = reject
+      ? "Purchase rejected successfully"
+      : "Purchase confirmed successfully";
+
+    return res
+      .status(200)
+      .json(responseFormatter(true, message, confirmedPurchase));
+  }
+);
+
+export const purchaseList = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+    const purchases = await packageService.getPurchaseList();
+
+    return res
+      .status(200)
+      .json(
+        responseFormatter(true, "Purchases retrieved successfully", purchases)
       );
   }
 );

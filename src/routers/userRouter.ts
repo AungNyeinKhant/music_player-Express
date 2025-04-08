@@ -12,8 +12,20 @@ import {
   trendingTracks,
 } from "../controllers/user/trackController";
 import { albumList } from "../controllers/user/albumController";
+import {
+  getPackages,
+  subscribePackage,
+} from "../controllers/user/packageController";
+import {
+  createPlaylist,
+  getPlaylists,
+  handleTrack_Playlist,
+} from "../controllers/user/playlistController";
 
 const userRouter = Router();
+
+//refresh token api
+userRouter.post("/auth/refresh-token", userAuthController.refreshToken);
 
 //user APIs below
 userRouter.get("/", getUser);
@@ -28,8 +40,20 @@ userRouter.post(
   userAuthController.register
 );
 //subscription api
-userRouter.get("/subscription", authenticateJWT, authorize("user"), playTrack);
-userRouter.post("/subscribe", authenticateJWT, authorize("user"), playTrack);
+// userRouter.get("/subscription", authenticateJWT, authorize("user"), playTrack);
+// userRouter.post("/subscribe", authenticateJWT, authorize("user"), playTrack);
+
+// package APIs
+userRouter.get("/packages", authenticateJWT, authorize("user"), getPackages);
+userRouter.post(
+  "/subscribe-package",
+  authenticateJWT,
+  authorize("user"),
+  createMulter("uploads/transitions", "image").fields([
+    { name: "transition", maxCount: 1 },
+  ]),
+  subscribePackage
+);
 
 // track APIs below
 userRouter.post("/play", authenticateJWT, authorize("validUser"), playTrack);
@@ -54,5 +78,27 @@ userRouter.get(
 
 //album Api below
 userRouter.get("/albums", authenticateJWT, authorize("validUser"), albumList);
+
+//playlist APIs
+userRouter.post(
+  "/playlists",
+  authenticateJWT,
+  authorize("validUser"),
+  createPlaylist
+);
+
+userRouter.get(
+  "/playlists",
+  authenticateJWT,
+  authorize("validUser"),
+  getPlaylists
+);
+
+userRouter.post(
+  "/playlists/handle-track",
+  authenticateJWT,
+  authorize("validUser"),
+  handleTrack_Playlist
+);
 
 export default userRouter;

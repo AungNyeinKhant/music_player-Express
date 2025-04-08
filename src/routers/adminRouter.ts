@@ -4,7 +4,18 @@ import { authorize } from "../utils/jwt";
 import adminAuthController from "../controllers/auth/adminAuthController";
 import createMulter from "../middleware/multer";
 import { createGenre } from "../controllers/admin/genreController";
-import { createPackage } from "../controllers/admin/packageController";
+import {
+  confirmPurchase,
+  createPackage,
+  purchaseList,
+} from "../controllers/admin/packageController";
+import {
+  getPlayCountAnalytics,
+  getPurchaseAnalytics,
+  getTopAlbums,
+  getTopArtists,
+  getTopGenres,
+} from "../controllers/admin/analyticsController";
 
 const adminRouter = Router();
 
@@ -37,6 +48,50 @@ adminRouter.post(
   authenticateJWT,
   authorize("admin"),
   createPackage
+);
+//accept purchase
+adminRouter.get("/purchase", authenticateJWT, authorize("admin"), purchaseList);
+adminRouter.post(
+  "/purchase/handle",
+  authenticateJWT,
+  authorize("admin"),
+  confirmPurchase
+);
+
+// Analytics Routes
+adminRouter.get(
+  "/analytics/plays",
+  authenticateJWT,
+  authorize("admin"),
+  getPlayCountAnalytics
+);
+
+adminRouter.get(
+  "/analytics/purchases",
+  authenticateJWT,
+  authorize("admin"),
+  getPurchaseAnalytics
+);
+
+adminRouter.get(
+  "/analytics/artists",
+  authenticateJWT,
+  authorize("admin"),
+  getTopArtists
+);
+
+adminRouter.get(
+  "/analytics/genres",
+  authenticateJWT,
+  authorize("admin"),
+  getTopGenres
+);
+
+adminRouter.get(
+  "/analytics/albums",
+  authenticateJWT,
+  authorize("admin"),
+  getTopAlbums
 );
 
 export default adminRouter;

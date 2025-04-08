@@ -3,8 +3,20 @@ import prisma from "../../prisma";
 import { UserLoginDto, UserRegisterDto } from "../../types/user.dto";
 import { BadRequestException } from "../../utils/catch-errors";
 import { compareValue, hashValue } from "../../utils/helper";
-import { refreshTokenSignOptions, signJwtToken } from "../../utils/jwt";
+import {
+  refreshTokenSignOptions,
+  signJwtToken,
+  verifyJwtToken,
+  RefreshPayload,
+} from "../../utils/jwt";
 import { logger } from "../../utils/logger";
+import { config } from "../../config/app.config";
+
+type RefreshTokenResponse = {
+  role: "user" | "artist" | "admin";
+  id: string;
+  accessToken: string;
+};
 
 export default class UserAuthService {
   public async registerService(registerData: UserRegisterDto) {
@@ -89,7 +101,7 @@ export default class UserAuthService {
     const refreshToken = signJwtToken(
       {
         userId: user.id,
-        role: "artist",
+        role: "user",
         sessionId: 0,
       },
       refreshTokenSignOptions
@@ -108,5 +120,119 @@ export default class UserAuthService {
       accessToken,
       refreshToken,
     };
+  }
+
+  public async refreshTokenService(
+    refreshToken: string
+  ): Promise<RefreshTokenResponse> {
+    // Verify the refresh token
+    const { payload, error } = verifyJwtToken<RefreshPayload>(refreshToken, {
+      secret: config.JWT.REFRESH_SECRET,
+    });
+    logger.info(
+      "Attempting to refresh access token for role",
+      payload?.role,
+      "and id",
+      payload?.userId
+    );
+
+    if (error || !payload) {
+      logger.warn("Invalid refresh token provided");
+      throw new BadRequestException(
+        "Invalid refresh token",
+        ErrorCode.AUTH_INVALID_TOKEN
+      );
+    }
+
+    let user;
+    // Find the user based on the role and ID from the refresh token
+    if (payload.role === "user") {
+      user = await prisma.user.findUnique({
+        where: {
+          id: payload.userId,
+        },
+      });
+
+      if (!user) {
+        logger.warn(`User not found for refresh token: ${payload.userId}`);
+        throw new BadRequestException(
+          "User not found",
+          ErrorCode.AUTH_USER_NOT_FOUND
+        );
+      }
+
+      logger.info(`Generating new access token for user ID: ${user.id}`);
+
+      const accessToken = await signJwtToken({
+        userId: user.id,
+        role: "user",
+      });
+
+      return {
+        role: payload.role,
+        id: payload.userId,
+        accessToken,
+      };
+    } else if (payload.role === "artist") {
+      user = await prisma.artist.findUnique({
+        where: {
+          id: payload.userId,
+        },
+      });
+
+      if (!user) {
+        logger.warn(`Artist not found for refresh token: ${payload.userId}`);
+        throw new BadRequestException(
+          "Artist not found",
+          ErrorCode.AUTH_USER_NOT_FOUND
+        );
+      }
+
+      logger.info(`Generating new access token for artist ID: ${user.id}`);
+
+      const accessToken = await signJwtToken({
+        userId: user.id,
+        role: "artist",
+      });
+
+      return {
+        role: payload.role,
+        id: payload.userId,
+        accessToken,
+      };
+    } else if (payload.role === "admin") {
+      user = await prisma.admin.findUnique({
+        where: {
+          id: payload.userId,
+        },
+      });
+
+      if (!user) {
+        logger.warn(`Admin not found for refresh token: ${payload.userId}`);
+        throw new BadRequestException(
+          "Admin not found",
+          ErrorCode.AUTH_USER_NOT_FOUND
+        );
+      }
+
+      logger.info(`Generating new access token for admin ID: ${user.id}`);
+
+      const accessToken = await signJwtToken({
+        userId: user.id,
+        role: "admin",
+      });
+
+      return {
+        role: payload.role,
+        id: payload.userId,
+        accessToken,
+      };
+    }
+
+    // If we get here, the role is invalid
+    throw new BadRequestException(
+      "Invalid role in refresh token",
+      ErrorCode.AUTH_INVALID_TOKEN
+    );
   }
 }
