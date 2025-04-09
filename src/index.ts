@@ -3,9 +3,9 @@ import helmet from "helmet";
 import cors from "cors";
 import "dotenv/config";
 
-import userRouter from "./routers/userRouter";
-import artistRouter from "./routers/artistRouter";
-import adminRouter from "./routers/adminRouter";
+import userRouter from "./routes/userRouter";
+import artistRouter from "./routes/artistRouter";
+import adminRouter from "./routes/adminRouter";
 import { config } from "./config/app.config";
 import { errorHandler } from "./middleware/errorHandler";
 import passport from "./middleware/passport";

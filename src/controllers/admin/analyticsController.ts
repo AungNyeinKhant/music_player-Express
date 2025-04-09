@@ -149,3 +149,18 @@ export const getTopAlbums = asyncHandler(
       .json(responseFormatter(true, "Top albums retrieved", analytics));
   }
 );
+
+export const getMonthlyTotalAnalytics = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+    const analytics = await analysisService.getMonthlyTotalAnalytics();
+    return res
+      .status(200)
+      .json(
+        responseFormatter(
+          true,
+          "Monthly total analytics retrieved successfully",
+          analytics
+        )
+      );
+  }
+);

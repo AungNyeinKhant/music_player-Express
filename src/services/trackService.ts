@@ -59,6 +59,60 @@ class TrackService {
     return processedTracks;
   }
 
+  public async getTracksByArtist(artist_id: string) {
+    const tracks = await prisma.track.findMany({
+      where: { artist_id },
+      orderBy: {
+        listen_count: 'desc'
+      },
+      take: 15,
+      include: {
+        artist: {
+          select: {
+            name: true,
+            image: true,
+          },
+        },
+        genre: {
+          select: {
+            name: true,
+          },
+        },
+        album: {
+          select: {
+            name: true,
+            image: true,
+          },
+        },
+      },
+    });
+
+    const processedTracks = tracks.map((track) => ({
+      ...track,
+      audio: track.audio
+        ? `${config.BACKEND_BASE_URL}/uploads/track/${track.audio}`
+        : null,
+      artist: track.artist
+        ? {
+            ...track.artist,
+            image: track.artist.image
+              ? `${config.BACKEND_BASE_URL}/uploads/artist/${track.artist.image}`
+              : null,
+          }
+        : null,
+      album: track.album
+        ? {
+            ...track.album,
+            image: track.album.image
+              ? `${config.BACKEND_BASE_URL}/uploads/album/${track.album.image}`
+              : null,
+          }
+        : null,
+    }));
+
+    return processedTracks;
+  }
+
   public async createTrack(createTrackData: TrackDto) {
     const { name, description, audio, artist_id, album_id, genre_id } =
       createTrackData;

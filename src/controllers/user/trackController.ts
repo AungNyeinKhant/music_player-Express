@@ -72,3 +72,17 @@ export const recentTracks = asyncHandler(
       .json(responseFormatter(true, "Recent tracks found", recentListenTracks));
   }
 );
+
+export const getTracksByArtist = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { artist_id } = req.params;
+    if (!artist_id) {
+      return res.status(400).json(responseFormatter(false, "Artist ID is required"));
+    }
+
+    const tracks = await trackService.getTracksByArtist(artist_id);
+    return res
+      .status(200)
+      .json(responseFormatter(true, "Artist tracks found", tracks));
+  }
+);
