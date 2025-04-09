@@ -28,3 +28,34 @@ export const createGenre = asyncHandler(
       .json(responseFormatter(true, "Genre created successfully", genre));
   }
 );
+
+export const updateGenre = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+    const { id } = req.params;
+    const { name } = req.body;
+
+    if (!name) {
+      return res
+        .status(400)
+        .json(responseFormatter(false, "Name field required"));
+    }
+
+    const updatedGenre = await genreService.updateGenre(id, name);
+
+    return res
+      .status(200)
+      .json(responseFormatter(true, "Genre updated successfully", updatedGenre));
+  }
+);
+
+export const deleteGenre = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+    const { id } = req.params;
+
+    const deletedGenre = await genreService.deleteGenre(id);
+
+    return res
+      .status(200)
+      .json(responseFormatter(true, "Genre deleted successfully", deletedGenre));
+  }
+);

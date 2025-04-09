@@ -53,3 +53,30 @@ export const purchaseList = asyncHandler(
       );
   }
 );
+
+export const updatePackage = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+    const { id } = req.params;
+    const body = createPackageSchema.parse({
+      ...req.body,
+    });
+
+    const updatedPackage = await packageService.updatePackage(id, body);
+
+    return res
+      .status(200)
+      .json(responseFormatter(true, "Package updated successfully", updatedPackage));
+  }
+);
+
+export const deletePackage = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+    const { id } = req.params;
+
+    const deletedPackage = await packageService.deletePackage(id);
+
+    return res
+      .status(200)
+      .json(responseFormatter(true, "Package deleted successfully", deletedPackage));
+  }
+);

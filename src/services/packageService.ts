@@ -141,6 +141,51 @@ class PackageService {
 
     return result;
   }
+
+  public async updatePackage(packageId: string, updateData: Partial<PackageDto>) {
+    const existingPackage = await prisma.packages.findUnique({
+      where: { id: packageId }
+    });
+
+    if (!existingPackage) {
+      throw new Error("Package not found");
+    }
+
+    const updatedPackage = await prisma.packages.update({
+      where: { id: packageId },
+      data: updateData
+    });
+
+    return updatedPackage;
+  }
+
+  public async deletePackage(packageId: string) {
+    const existingPackage = await prisma.packages.findUnique({
+      where: { id: packageId }
+    });
+
+    if (!existingPackage) {
+      throw new Error("Package not found");
+    }
+
+    // Check if there are any active purchases for this package
+    const activePurchases = await prisma.purchase.findFirst({
+      where: {
+        package_id: packageId,
+        status: "PENDING"
+      }
+    });
+
+    if (activePurchases) {
+      throw new Error("Cannot delete package with pending purchases");
+    }
+
+    const deletedPackage = await prisma.packages.delete({
+      where: { id: packageId }
+    });
+
+    return deletedPackage;
+  }
 }
 const packageService = new PackageService();
 export default packageService;

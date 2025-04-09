@@ -1,5 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import { config } from "../config/app.config";
+import { BadRequestException } from "../utils/catch-errors";
+import { ErrorCode } from "../enums/error-code.enum";
 
 const prisma = new PrismaClient();
 
@@ -117,6 +119,129 @@ class PlaylistService {
         },
       });
       return { message: "Track added to playlist" };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async updatePlaylist(id: string, name: string, user_id: string) {
+    try {
+      const playlist = await prisma.playlist.findUnique({
+        where: { id },
+      });
+
+      if (!playlist) {
+        throw new BadRequestException(
+          "Playlist not found",
+          ErrorCode.RESOURCE_NOT_FOUND
+        );
+      }
+
+      if (playlist.user_id !== user_id) {
+        throw new BadRequestException(
+          "You don't have permission to update this playlist",
+          ErrorCode.ACCESS_FORBIDDEN
+        );
+      }
+
+      const updatedPlaylist = await prisma.playlist.update({
+        where: { id },
+        data: { name },
+        include: {
+          playlist_tracks: {
+            include: {
+              track: {
+                include: {
+                  artist: {
+                    select: {
+                      name: true,
+                      image: true,
+                    },
+                  },
+                  genre: {
+                    select: {
+                      name: true,
+                    },
+                  },
+                  album: {
+                    select: {
+                      name: true,
+                      image: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+
+      const processedPlaylist = {
+        ...updatedPlaylist,
+        playlist_tracks: updatedPlaylist.playlist_tracks.map((pt) => ({
+          ...pt,
+          track: {
+            ...pt.track,
+            audio: pt.track.audio
+              ? `${config.BACKEND_BASE_URL}/uploads/track/${pt.track.audio}`
+              : null,
+            artist: pt.track.artist
+              ? {
+                  ...pt.track.artist,
+                  image: pt.track.artist.image
+                    ? `${config.BACKEND_BASE_URL}/uploads/artist/${pt.track.artist.image}`
+                    : null,
+                }
+              : null,
+            album: pt.track.album
+              ? {
+                  ...pt.track.album,
+                  image: pt.track.album.image
+                    ? `${config.BACKEND_BASE_URL}/uploads/album/${pt.track.album.image}`
+                    : null,
+                }
+              : null,
+          },
+        })),
+      };
+
+      return processedPlaylist;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async deletePlaylist(id: string, user_id: string) {
+    try {
+      const playlist = await prisma.playlist.findUnique({
+        where: { id },
+      });
+
+      if (!playlist) {
+        throw new BadRequestException(
+          "Playlist not found",
+          ErrorCode.RESOURCE_NOT_FOUND
+        );
+      }
+
+      if (playlist.user_id !== user_id) {
+        throw new BadRequestException(
+          "You don't have permission to delete this playlist",
+          ErrorCode.ACCESS_FORBIDDEN
+        );
+      }
+
+      // Delete all playlist tracks first
+      await prisma.playlistTrack.deleteMany({
+        where: { playlist_id: id },
+      });
+
+      // Then delete the playlist
+      await prisma.playlist.delete({
+        where: { id },
+      });
+
+      return true;
     } catch (error) {
       throw error;
     }

@@ -18,6 +18,11 @@ interface TopItemAnalyticsResponse {
   count: number;
 }
 
+interface MonthlyTotalAnalyticsResponse {
+  totalPlayCount: number;
+  totalPurchaseAmount: number;
+}
+
 const MONTH_LABELS = [
   "JAN",
   "FEB",
@@ -102,7 +107,7 @@ class AnalysisService {
 
   public async getPurchaseAnalytics(
     params: AnalyticsParams
-  ): Promise<{ counts: AnalyticsResponse; amounts: AnalyticsResponse }> {
+  ): Promise<AnalyticsResponse> {
     const { date, type = "monthly" } = params;
     const month = date.getMonth() + 1;
     const year = date.getFullYear();
@@ -196,7 +201,7 @@ class AnalysisService {
       }
     });
 
-    return analytics;
+    return analytics.amounts;
   }
 
   public async getTopArtistsAnalytics(
@@ -400,6 +405,40 @@ class AnalysisService {
     return {
       labels: type === "monthly" ? monthsToProcess : MONTH_LABELS,
       data: monthlyData,
+    };
+  }
+
+  public async getMonthlyTotalAnalytics(): Promise<MonthlyTotalAnalyticsResponse> {
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+    const [totalPlayCount, totalPurchaseAmount] = await Promise.all([
+      prisma.playHistory.count({
+        where: {
+          created_at: {
+            gte: startOfMonth,
+            lte: endOfMonth,
+          },
+        },
+      }),
+      prisma.purchase.aggregate({
+        where: {
+          created_at: {
+            gte: startOfMonth,
+            lte: endOfMonth,
+          },
+          status: "APPROVED",
+        },
+        _sum: {
+          price: true,
+        },
+      }),
+    ]);
+
+    return {
+      totalPlayCount,
+      totalPurchaseAmount: totalPurchaseAmount._sum.price || 0,
     };
   }
 }
