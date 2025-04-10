@@ -26,13 +26,24 @@ class AlbumService {
     };
   }
 
-  public async getAlbums(artist_id?: string, genre_id?: string) {
-    let whereCondition = {};
+  public async getAlbums(
+    artist_id?: string,
+    genre_id?: string,
+    search?: string
+  ) {
+    let whereCondition: any = {};
 
     if (artist_id) {
       whereCondition = { artist_id };
     } else if (genre_id) {
       whereCondition = { genre_id };
+    } else if (search) {
+      whereCondition = {
+        name: {
+          contains: search,
+          mode: "insensitive",
+        },
+      };
     }
 
     const albums = await prisma.album.findMany({

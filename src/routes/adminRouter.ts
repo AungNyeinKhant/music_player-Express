@@ -3,7 +3,11 @@ import { authenticateJWT } from "../strategies/jwt.strategy";
 import { authorize } from "../utils/jwt";
 import adminAuthController from "../controllers/auth/adminAuthController";
 import createMulter from "../middleware/multer";
-import { createGenre, updateGenre, deleteGenre } from "../controllers/admin/genreController";
+import {
+  createGenre,
+  updateGenre,
+  deleteGenre,
+} from "../controllers/admin/genreController";
 import {
   confirmPurchase,
   createPackage,
@@ -20,15 +24,28 @@ import {
   getMonthlyTotalAnalytics,
 } from "../controllers/admin/analyticsController";
 
-import { deleteArtist, getArtists } from "../controllers/admin/artistController";
+import {
+  deleteArtist,
+  getArtists,
+} from "../controllers/admin/artistController";
 import { deleteUser, getUsers } from "../controllers/admin/userController";
-
+import { deleteAdmin, updateAdmin } from "../controllers/admin/adminController";
 
 const adminRouter = Router();
 
 //customer APIs below
 adminRouter.get("/");
 // adminRouter.get("/:id");
+
+adminRouter.put(
+  "/:id",
+  authenticateJWT,
+  authorize("admin"),
+  createMulter("uploads/admin", "image").fields([
+    { name: "image", maxCount: 1 },
+  ]),
+  updateAdmin
+);
 
 adminRouter.post("/auth/login", adminAuthController.login);
 adminRouter.post(
@@ -138,26 +155,15 @@ adminRouter.get(
 );
 
 // Artist Routes
-adminRouter.get(
-  "/artists",
-  authenticateJWT,
-  authorize("admin"),
-  getArtists
-);
+adminRouter.get("/artists", authenticateJWT, authorize("admin"), getArtists);
 adminRouter.delete(
   "/artists/:id",
   authenticateJWT,
   authorize("admin"),
   deleteArtist
-  
 );
 
-adminRouter.get(
-  "/users",
-  authenticateJWT,
-  authorize("admin"),
-  getUsers
-);
+adminRouter.get("/users", authenticateJWT, authorize("admin"), getUsers);
 // Profile Routes
 
 adminRouter.delete(
@@ -166,5 +172,7 @@ adminRouter.delete(
   authorize("admin"),
   deleteUser
 );
+
+adminRouter.delete("/:id", authenticateJWT, authorize("admin"), deleteAdmin);
 
 export default adminRouter;

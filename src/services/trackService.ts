@@ -63,7 +63,7 @@ class TrackService {
     const tracks = await prisma.track.findMany({
       where: { artist_id },
       orderBy: {
-        listen_count: 'desc'
+        listen_count: "desc",
       },
       take: 15,
       include: {
@@ -456,6 +456,66 @@ class TrackService {
       .filter((track) => track !== undefined);
 
     return orderedTracks;
+  }
+
+  public async getAllTracks(searchByName?: string) {
+    const tracks = await prisma.track.findMany({
+      where: searchByName
+        ? {
+            name: {
+              contains: searchByName,
+              mode: "insensitive",
+            },
+          }
+        : {},
+      orderBy: {
+        created_at: "desc",
+      },
+      include: {
+        artist: {
+          select: {
+            name: true,
+            image: true,
+          },
+        },
+        genre: {
+          select: {
+            name: true,
+          },
+        },
+        album: {
+          select: {
+            name: true,
+            image: true,
+          },
+        },
+      },
+    });
+
+    const processedTracks = tracks.map((track) => ({
+      ...track,
+      audio: track.audio
+        ? `${config.BACKEND_BASE_URL}/uploads/track/${track.audio}`
+        : null,
+      artist: track.artist
+        ? {
+            ...track.artist,
+            image: track.artist.image
+              ? `${config.BACKEND_BASE_URL}/uploads/artist/${track.artist.image}`
+              : null,
+          }
+        : null,
+      album: track.album
+        ? {
+            ...track.album,
+            image: track.album.image
+              ? `${config.BACKEND_BASE_URL}/uploads/album/${track.album.image}`
+              : null,
+          }
+        : null,
+    }));
+
+    return processedTracks;
   }
 }
 const trackService = new TrackService();

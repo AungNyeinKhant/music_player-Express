@@ -2,11 +2,26 @@ import { config } from "../config/app.config";
 import prisma from "../prisma";
 import { BadRequestException } from "../utils/catch-errors";
 import { ErrorCode } from "../enums/error-code.enum";
-import { logger } from "../utils/logger";
 import { hashValue } from "../utils/helper";
 
 class AdminService {
-  // ... existing code ...
+  public async deleteAdmin(id: string): Promise<void> {
+    const admin = await prisma.admin.findUnique({
+      where: { id },
+    });
+
+    if (!admin) {
+      throw new BadRequestException(
+        "Admin not found",
+        ErrorCode.AUTH_NOT_FOUND
+      );
+    }
+
+    // Delete the admin
+    await prisma.admin.delete({
+      where: { id },
+    });
+  }
 
   public async updateAdmin(
     id: string,
@@ -52,7 +67,7 @@ class AdminService {
         name: true,
         email: true,
         staff_id: true,
-        
+
         image: true,
       },
     });
@@ -64,4 +79,6 @@ class AdminService {
         : null,
     };
   }
-} 
+}
+const adminService = new AdminService();
+export default adminService;
