@@ -32,13 +32,13 @@ class AlbumService {
     search?: string;
   }) {
     let whereCondition: any = {};
-    const { artist_id, genre_id, search } = param;
+    const { artist_id, genre_id, search } = param || {};
 
     if (artist_id) {
       whereCondition = { artist_id };
     } else if (genre_id) {
       whereCondition = { genre_id };
-    } else if (search) {
+    } else if (search && typeof search === 'string') {
       whereCondition = {
         name: {
           contains: search,

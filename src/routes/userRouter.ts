@@ -33,6 +33,10 @@ import {
   updatePlaylist,
   deletePlaylist,
 } from "../controllers/user/playlistController";
+import {
+  artistList,
+  getArtistById,
+} from "../controllers/user/artistController";
 
 const userRouter = Router();
 
@@ -108,6 +112,7 @@ userRouter.get(
   authorize("validUser"),
   mostPlayedAlbums
 );
+
 userRouter.get(
   "/albums/:id",
   authenticateJWT,
@@ -119,6 +124,15 @@ userRouter.get(
   authenticateJWT,
   authorize("validUser"),
   getTracksByAlbumId
+);
+
+//artist Api below
+userRouter.get("/artists", authenticateJWT, authorize("validUser"), artistList);
+userRouter.get(
+  "/artists/:id",
+  authenticateJWT,
+  authorize("validUser"),
+  getArtistById
 );
 
 //playlist APIs

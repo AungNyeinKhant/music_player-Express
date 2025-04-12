@@ -19,12 +19,6 @@ const artistRouter = Router();
 
 //customer APIs below
 // artistRouter.get("/");
-artistRouter.get(
-  "/album/:id",
-  authenticateJWT,
-  authorize("artist"),
-  getAlbumById
-);
 
 artistRouter.post("/auth/login", artistAuthController.login);
 artistRouter.post(
@@ -48,6 +42,13 @@ artistRouter.post(
   ]),
   createAlbum
 );
+artistRouter.get(
+  "/album/:id",
+  authenticateJWT,
+  authorize("artist"),
+  getAlbumById
+);
+
 artistRouter.get("/albums", authenticateJWT, authorize("artist"), albumList);
 //track api below
 artistRouter.post(

@@ -53,7 +53,7 @@ export const albumList = asyncHandler(
     const payload = getTokenData(req, res);
     const artist_id = payload.userId;
 
-    const albums = await albumService.getAlbums(artist_id);
+    const albums = await albumService.getAlbums({ artist_id });
 
     return res
       .status(200)

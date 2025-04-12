@@ -14,17 +14,27 @@ export const albumList = asyncHandler(
     res: Response,
     next: NextFunction
   ): Promise<any> => {
-    const { artist_id, genre_id, search } = req.query;
+    try {
+      const { artist_id, genre_id, search } = req.query;
+      
+      // Convert any null or undefined values to undefined for consistency
+      const params = {
+        artist_id: artist_id || undefined,
+        genre_id: genre_id || undefined,
+        search: search || undefined,
+      };
 
-    const albums = await albumService.getAlbums({
-      artist_id,
-      genre_id,
-      search,
-    });
+      const albums = await albumService.getAlbums(params);
 
-    return res
-      .status(200)
-      .json(responseFormatter(true, "Albums fetched successfully", albums));
+      return res
+        .status(200)
+        .json(responseFormatter(true, "Albums fetched successfully", albums));
+    } catch (error) {
+      console.error("Error fetching albums:", error);
+      return res
+        .status(500)
+        .json(responseFormatter(false, "Failed to fetch albums"));
+    }
   }
 );
 

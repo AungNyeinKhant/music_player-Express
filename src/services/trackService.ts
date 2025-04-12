@@ -65,7 +65,7 @@ class TrackService {
       orderBy: {
         listen_count: "desc",
       },
-      take: 15,
+      // take: 100,
       include: {
         artist: {
           select: {
