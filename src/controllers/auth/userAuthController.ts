@@ -78,13 +78,15 @@ class UserAuthController {
           responseFormatter(false, "Refresh token is required", null)
         );
       }
-      const { role, accessToken, id } =
+      const { role, accessToken, id,name,image } =
         await this.authService.refreshTokenService(refreshToken);
       return res.status(HTTPSTATUS.OK).json(
         responseFormatter(true, "Token refreshed successfully", {
           role,
           accessToken,
           userId:id,
+          name: name,
+          image: image
         })
       );
     }

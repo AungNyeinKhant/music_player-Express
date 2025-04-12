@@ -1,3 +1,4 @@
+import { config } from "../../config/app.config";
 import { ErrorCode } from "../../enums/error-code.enum";
 import prisma from "../../prisma";
 import { ArtistLoginDto, ArtistRegisterDto } from "../../types/artist.dto";
@@ -113,6 +114,7 @@ export default class ArtistAuthService {
         email: artist.email,
         phone: artist.phone,
         dob: artist.dob,
+        image: `${config.BACKEND_BASE_URL}/artist/image/${artist.image}`,
       },
       accessToken,
       refreshToken,

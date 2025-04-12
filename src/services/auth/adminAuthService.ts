@@ -1,3 +1,4 @@
+import { config } from "../../config/app.config";
 import { ErrorCode } from "../../enums/error-code.enum";
 import prisma from "../../prisma";
 import { AdminLoginDto, AdminRegisterDto } from "../../types/admin.dto";
@@ -37,6 +38,7 @@ export default class AdminAuthService {
     });
 
     return {
+      id: newAdmin.id,
       name: newAdmin.name,
       email: newAdmin.email,
       staff_id: newAdmin.staff_id,
@@ -93,6 +95,7 @@ export default class AdminAuthService {
         name: admin.name,
         email: admin.email,
         staff_id: admin.staff_id,
+        image: `${config.BACKEND_BASE_URL}/admin/image/${admin.image}`,
       },
       accessToken,
       refreshToken,

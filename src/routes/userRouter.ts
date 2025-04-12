@@ -16,6 +16,7 @@ import {
   getTracksByArtist,
   getAllTracks,
   getTracksByAlbumId,
+  getTracksByGenreId,
 } from "../controllers/user/trackController";
 import {
   albumList,
@@ -96,6 +97,12 @@ userRouter.get(
   authenticateJWT,
   authorize("validUser"),
   getTracksByArtist
+);
+userRouter.get(
+  "/tracks/genre/:genre_id",
+  authenticateJWT,
+  authorize("validUser"),
+  getTracksByGenreId
 );
 userRouter.get(
   "/tracks",

@@ -16,6 +16,8 @@ type RefreshTokenResponse = {
   role: "user" | "artist" | "admin";
   id: string;
   accessToken: string;
+  image?: string | null;
+  name?: string | null;
 };
 
 export default class UserAuthService {
@@ -115,6 +117,7 @@ export default class UserAuthService {
         name: user.name,
         email: user.email,
         phone: user.phone,
+        image: `${config.BACKEND_BASE_URL}/user/image/${user.image}`,
         dob: user.dob,
       },
       accessToken,
@@ -172,6 +175,8 @@ export default class UserAuthService {
         role: payload.role,
         id: payload.userId,
         accessToken,
+        image: user.image ? `${config.BACKEND_BASE_URL}/uploads/user/${user.image}` : null,
+        name: user.name,
       };
     } else if (payload.role === "artist") {
       user = await prisma.artist.findUnique({
@@ -199,6 +204,8 @@ export default class UserAuthService {
         role: payload.role,
         id: payload.userId,
         accessToken,
+        name: user.name,
+        image: user.image ? `${config.BACKEND_BASE_URL}/uploads/artist/${user.image}` : null,
       };
     } else if (payload.role === "admin") {
       user = await prisma.admin.findUnique({
@@ -225,7 +232,9 @@ export default class UserAuthService {
       return {
         role: payload.role,
         id: payload.userId,
+        name: user.name,
         accessToken,
+        image: user.image ? `${config.BACKEND_BASE_URL}/uploads/admin/${user.image}` : null,
       };
     }
 
