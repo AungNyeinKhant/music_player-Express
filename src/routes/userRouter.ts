@@ -1,5 +1,8 @@
 import { Router } from "express";
-import { getUserProfile, updateUserProfile } from "../controllers/user/profileController";
+import {
+  getUserProfile,
+  updateUserProfile,
+} from "../controllers/user/profileController";
 import { authenticateJWT } from "../strategies/jwt.strategy";
 import { authorize } from "../utils/jwt";
 
@@ -11,8 +14,14 @@ import {
   recentTracks,
   trendingTracks,
   getTracksByArtist,
+  getAllTracks,
+  getTracksByAlbumId,
 } from "../controllers/user/trackController";
-import { albumList } from "../controllers/user/albumController";
+import {
+  albumList,
+  mostPlayedAlbums,
+  getAlbumById,
+} from "../controllers/user/albumController";
 import {
   getPackages,
   subscribePackage,
@@ -84,9 +93,33 @@ userRouter.get(
   authorize("validUser"),
   getTracksByArtist
 );
+userRouter.get(
+  "/tracks",
+  authenticateJWT,
+  authorize("validUser"),
+  getAllTracks
+);
 
 //album Api below
 userRouter.get("/albums", authenticateJWT, authorize("validUser"), albumList);
+userRouter.get(
+  "/albums/most-played",
+  authenticateJWT,
+  authorize("validUser"),
+  mostPlayedAlbums
+);
+userRouter.get(
+  "/albums/:id",
+  authenticateJWT,
+  authorize("validUser"),
+  getAlbumById
+);
+userRouter.get(
+  "/albums/:id/tracks",
+  authenticateJWT,
+  authorize("validUser"),
+  getTracksByAlbumId
+);
 
 //playlist APIs
 userRouter.post(
@@ -124,10 +157,15 @@ userRouter.delete(
   deletePlaylist
 );
 
-
 userRouter.get("/profile", authenticateJWT, authorize("user"), getUserProfile);
-userRouter.put("/profile", authenticateJWT, authorize("user"),createMulter("uploads/user", "image").fields([
-  { name: "image", maxCount: 1 },
-]), updateUserProfile);
+userRouter.put(
+  "/profile",
+  authenticateJWT,
+  authorize("user"),
+  createMulter("uploads/user", "image").fields([
+    { name: "image", maxCount: 1 },
+  ]),
+  updateUserProfile
+);
 
 export default userRouter;
