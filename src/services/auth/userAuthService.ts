@@ -42,7 +42,7 @@ export default class UserAuthService {
 
     const hashedPassword = await hashValue(password);
 
-    const newArtist = await prisma.user.create({
+    const newUser = await prisma.user.create({
       data: {
         name,
         email,
@@ -54,7 +54,7 @@ export default class UserAuthService {
       },
     });
 
-    logger.info(`New User created: ${newArtist.id} - ${newArtist.name}`);
+    logger.info(`New User created: ${newUser.id} - ${newUser.name}`);
 
     /*
     return {
@@ -117,7 +117,7 @@ export default class UserAuthService {
         name: user.name,
         email: user.email,
         phone: user.phone,
-        image: `${config.BACKEND_BASE_URL}/user/image/${user.image}`,
+        image: `${config.BACKEND_BASE_URL}/uploads/user/${user.image}`,
         dob: user.dob,
       },
       accessToken,

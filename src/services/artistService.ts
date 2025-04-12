@@ -3,12 +3,20 @@ import prisma from "../prisma";
 import { BadRequestException } from "../utils/catch-errors";
 import { ErrorCode } from "../enums/error-code.enum";
 import { logger } from "../utils/logger";
-import bcrypt from "bcrypt";
+
 import { hashValue } from "../utils/helper";
 
 class ArtistService {
-  public async getArtists() {
+  public async getArtists(search?: string) {
+    const whereCondition = search && typeof search === 'string' ? {
+      name: {
+        contains: search,
+        mode: "insensitive" as const,
+      },
+    } : {};
+
     const artists = await prisma.artist.findMany({
+      where: whereCondition,
       select: {
         id: true,
         name: true,
@@ -17,8 +25,8 @@ class ArtistService {
         dob: true,
         image: true,
         bg_image: true,
-        nrc_front:true,
-        nrc_back:true,
+        nrc_front: true,
+        nrc_back: true,
         created_at: true,
         updated_at: true,
       },
@@ -32,7 +40,7 @@ class ArtistService {
       bg_image: artist.bg_image
         ? `${config.BACKEND_BASE_URL}/uploads/artist/${artist.bg_image}`
         : null,
-        nrc_front: artist.nrc_front
+      nrc_front: artist.nrc_front
         ? `${config.BACKEND_BASE_URL}/uploads/artist/${artist.nrc_front}`
         : null,
       nrc_back: artist.nrc_back
@@ -72,7 +80,6 @@ class ArtistService {
       bg_image: artist.bg_image
         ? `${config.BACKEND_BASE_URL}/uploads/artist/${artist.bg_image}`
         : null,
-      
     };
   }
 
@@ -154,8 +161,6 @@ class ArtistService {
       );
     }
 
-    
-
     // Delete artist record
     await prisma.artist.delete({
       where: { id },
@@ -163,7 +168,6 @@ class ArtistService {
 
     return true;
   }
-
 }
 
 const artistService = new ArtistService();

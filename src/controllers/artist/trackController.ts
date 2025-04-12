@@ -79,3 +79,24 @@ export const playTrack = asyncHandler(
       .json(responseFormatter(true, "Track Play recorded successfully", track));
   }
 );
+
+export const deleteTrack = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+    const { id } = req.params;
+    const { userId } = getTokenData(req, res);
+
+    try {
+      const result = await trackService.deleteTrack(id, userId);
+      return res
+        .status(200)
+        .json(responseFormatter(true, "Track deleted successfully", { id }));
+    } catch (error) {
+      if (error instanceof Error) {
+        return res
+          .status(404)
+          .json(responseFormatter(false, error.message));
+      }
+      throw error;
+    }
+  }
+);

@@ -570,6 +570,54 @@ class TrackService {
 
     return processedTracks;
   }
+
+  public async deleteTrack(id: string, artist_id: string) {
+    // First check if the track exists and belongs to the artist
+    const track = await prisma.track.findFirst({
+      where: { 
+        id,
+        artist_id
+      },
+    });
+
+    if (!track) {
+      throw new BadRequestException(
+        "Track not found or you don't have permission to delete it",
+        ErrorCode.AUTH_NOT_FOUND
+      );
+    }
+
+    // Use a transaction to delete related data
+    const result = await prisma.$transaction(async (tx) => {
+      // Delete play history records for this track
+      await tx.playHistory.deleteMany({
+        where: { track_id: id }
+      });
+
+      // Delete playlist track associations
+      await tx.playlistTrack.deleteMany({
+        where: { track_id: id }
+      });
+
+      // Finally delete the track
+      const deletedTrack = await tx.track.delete({
+        where: { id },
+        include: {
+          album: {
+            select: {
+              name: true
+            }
+          }
+        }
+      });
+
+      return deletedTrack;
+    });
+
+    logger.info(`Track deleted: ${id} - ${result.name} by artist ${artist_id}`);
+    
+    return result;
+  }
 }
 const trackService = new TrackService();
 export default trackService;

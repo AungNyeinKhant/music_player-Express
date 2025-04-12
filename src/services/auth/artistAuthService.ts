@@ -114,7 +114,7 @@ export default class ArtistAuthService {
         email: artist.email,
         phone: artist.phone,
         dob: artist.dob,
-        image: `${config.BACKEND_BASE_URL}/artist/image/${artist.image}`,
+        image: `${config.BACKEND_BASE_URL}/uploads/artist/${artist.image}`,
       },
       accessToken,
       refreshToken,

@@ -4,12 +4,25 @@ import artistService from "../../services/artistService";
 import { responseFormatter } from "../../utils/helper";
 
 export const artistList = asyncHandler(
-  async (req: Request, res: Response, next: NextFunction): Promise<any> => {
-    const artists = await artistService.getArtists();
+  async (
+    req: Request<{}, {}, {}, { search?: string }>,
+    res: Response,
+    next: NextFunction
+  ): Promise<any> => {
+    const { search } = req.query;
     
-    return res
-      .status(200)
-      .json(responseFormatter(true, "Artists fetched successfully", artists));
+    try {
+      const artists = await artistService.getArtists(search);
+      
+      return res
+        .status(200)
+        .json(responseFormatter(true, "Artists fetched successfully", artists));
+    } catch (error) {
+      console.error("Error fetching artists:", error);
+      return res
+        .status(500)
+        .json(responseFormatter(false, "Failed to fetch artists"));
+    }
   }
 );
 
