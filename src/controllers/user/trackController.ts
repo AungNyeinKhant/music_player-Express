@@ -89,6 +89,27 @@ export const getTracksByArtist = asyncHandler(
   }
 );
 
+export const getTracksByAlbumId = asyncHandler(
+  async (
+    req: Request<{ id?: string }, {}, {}, {}>,
+    res: Response,
+    next: NextFunction
+  ): Promise<any> => {
+    const { id } = req.params;
+
+    if (!id) {
+      return res
+        .status(400)
+        .json(responseFormatter(false, "Album ID is required"));
+    }
+
+    const tracks = await trackService.getTracksByAlbumId(id);
+    return res
+      .status(200)
+      .json(responseFormatter(true, "Tracks fetched successfully", tracks));
+  }
+);
+
 export const getAllTracks = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const searchByName = req.query.search as string;

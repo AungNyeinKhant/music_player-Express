@@ -15,8 +15,13 @@ import {
   trendingTracks,
   getTracksByArtist,
   getAllTracks,
+  getTracksByAlbumId,
 } from "../controllers/user/trackController";
-import { albumList } from "../controllers/user/albumController";
+import {
+  albumList,
+  mostPlayedAlbums,
+  getAlbumById,
+} from "../controllers/user/albumController";
 import {
   getPackages,
   subscribePackage,
@@ -97,6 +102,24 @@ userRouter.get(
 
 //album Api below
 userRouter.get("/albums", authenticateJWT, authorize("validUser"), albumList);
+userRouter.get(
+  "/albums/most-played",
+  authenticateJWT,
+  authorize("validUser"),
+  mostPlayedAlbums
+);
+userRouter.get(
+  "/albums/:id",
+  authenticateJWT,
+  authorize("validUser"),
+  getAlbumById
+);
+userRouter.get(
+  "/albums/:id/tracks",
+  authenticateJWT,
+  authorize("validUser"),
+  getTracksByAlbumId
+);
 
 //playlist APIs
 userRouter.post(
