@@ -99,6 +99,27 @@ class UserService {
       prismaData.image = updateData.image.filename;
     }
 
+    // Handle date of birth formatting if it's a string
+    if (updateData.dob && typeof updateData.dob === 'string') {
+      try {
+        prismaData.dob = new Date(updateData.dob);
+        
+        // Validate the date
+        if (isNaN(prismaData.dob.getTime())) {
+          throw new BadRequestException(
+            "Invalid date format for date of birth",
+            ErrorCode.VALIDATION_ERROR
+          );
+        }
+      } catch (error) {
+        logger.error(`Error parsing date of birth: ${updateData.dob}`, error);
+        throw new BadRequestException(
+          "Invalid date format for date of birth",
+          ErrorCode.VALIDATION_ERROR
+        );
+      }
+    }
+
     // Update user data
     const updatedUser = await prisma.user.update({
       where: { id },

@@ -119,3 +119,19 @@ export const getAllTracks = asyncHandler(
       .json(responseFormatter(true, "Tracks found successfully", tracks));
   }
 );
+
+export const getTracksByGenreId = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { genre_id } = req.params;
+    if (!genre_id) {
+      return res
+        .status(400)
+        .json(responseFormatter(false, "Genre ID is required"));
+    }
+
+    const tracks = await trackService.getTracksByGenreId(genre_id);
+    return res
+      .status(200)
+      .json(responseFormatter(true, "Tracks by genre found successfully", tracks));
+  }
+);

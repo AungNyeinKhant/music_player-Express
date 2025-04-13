@@ -5,7 +5,16 @@ export type UserRegisterDto = {
   password: string;
   image?: Express.Multer.File;
   dob: string;
-  // valid_until: Date;
+  
+} ;
+export type UserUpdateDto = {
+  name: string;
+  email: string;
+  phone: string;
+  password?: string;
+  image?: Express.Multer.File;
+  dob: string;
+  
 };
 
 export type UserLoginDto = {

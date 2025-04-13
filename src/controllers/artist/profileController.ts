@@ -28,7 +28,7 @@ export const updateArtistProfile = asyncHandler(
     const updateData = {
       ...req.body,
       image: files?.["image"]?.[0],
-      background_image: files?.["background_image"]?.[0],
+      bg_image: files?.["bg_image"]?.[0],
     };
 
     const updatedArtist = await artistService.updateArtist(userId, updateData);

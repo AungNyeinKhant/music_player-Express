@@ -79,3 +79,83 @@ export const playTrack = asyncHandler(
       .json(responseFormatter(true, "Track Play recorded successfully", track));
   }
 );
+
+export const deleteTrack = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+    const { id } = req.params;
+    const { userId } = getTokenData(req, res);
+
+    try {
+      const result = await trackService.deleteTrack(id, userId);
+      return res
+        .status(200)
+        .json(responseFormatter(true, "Track deleted successfully", { id }));
+    } catch (error) {
+      if (error instanceof Error) {
+        return res
+          .status(404)
+          .json(responseFormatter(false, error.message));
+      }
+      throw error;
+    }
+  }
+);
+
+export const getTrackDetail = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+    const { id } = req.params;
+
+    try {
+      const track = await trackService.getTrackDetail(id);
+      return res
+        .status(200)
+        .json(responseFormatter(true, "Track details fetched successfully", track));
+    } catch (error) {
+      if (error instanceof Error) {
+        return res
+          .status(404)
+          .json(responseFormatter(false, error.message));
+      }
+      throw error;
+    }
+  }
+);
+
+export const updateTrack = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+    const { id } = req.params;
+    const { userId } = getTokenData(req, res);
+
+    try {
+      // Validate the input data
+      const body = createTrackSchema.partial().parse({
+        ...req.body,
+      });
+
+      // Process files
+      const files = req.files as
+        | {
+            [fieldname: string]: Express.Multer.File[];
+          }
+        | undefined;
+
+      const updateData = {
+        ...body,
+        audio: files?.["audio"] ? files["audio"][0] : undefined,
+      };
+
+      const updatedTrack = await trackService.updateTrack(id, userId, updateData);
+
+      return res
+        .status(200)
+        .json(responseFormatter(true, "Track updated successfully", updatedTrack));
+    } catch (error) {
+      if (error instanceof Error) {
+        return res
+          .status(400)
+          .json(responseFormatter(false, error.message));
+      }
+      throw error;
+    }
+  }
+);

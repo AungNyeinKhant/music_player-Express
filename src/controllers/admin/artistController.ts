@@ -6,12 +6,20 @@ import { getTokenData } from "../../utils/jwt";
 import { ParamsDictionary } from "express-serve-static-core";
 
 export const getArtists = asyncHandler(
-  async (req: Request, res: Response) => {
+  async (req: Request<{}, {}, {}, { search?: string }>, res: Response) => {
+    const { search } = req.query;
     
-    const artists = await artistService.getArtists();
-    res.status(200).json(
-      responseFormatter(true, "Artists retrieved successfully", artists)
-    );
+    try {
+      const artists = await artistService.getArtists(search);
+      res.status(200).json(
+        responseFormatter(true, "Artists retrieved successfully", artists)
+      );
+    } catch (error) {
+      console.error("Error fetching artists:", error);
+      return res
+        .status(500)
+        .json(responseFormatter(false, "Failed to fetch artists"));
+    }
   }
 );
 

@@ -7,6 +7,12 @@ interface AnalyticsParams {
   type?: "monthly" | "yearly";
 }
 
+interface ArtistAnalyticsParams {
+  date: Date;
+  type?: "monthly" | "yearly";
+  artist_id: string
+}
+
 interface AnalyticsResponse {
   labels: number[] | string[];
   data: TopItemAnalyticsResponse[][];
@@ -79,6 +85,82 @@ class AnalysisService {
                   created_at: {
                     gte: startDate,
                     lt: endDate,
+                  },
+                },
+              });
+              return { month, count: result };
+            })
+          );
+
+    const analytics = {
+      labels:
+        type === "monthly"
+          ? Array.from({ length: periodLength }, (_, i) => i + 1)
+          : MONTH_LABELS,
+      data: Array(periodLength).fill(0),
+    };
+
+    playHistory.forEach((entry) => {
+      if ("day" in entry) {
+        analytics.data[entry.day - 1] = entry.count;
+      } else {
+        analytics.data[entry.month] = entry.count;
+      }
+    });
+
+    return analytics;
+  }
+
+  public async getPlayCountArtistAnalytics(
+    params: ArtistAnalyticsParams
+  ): Promise<AnalyticsResponse> {
+    const { date, type = "monthly", artist_id } = params;
+    const month = date.getMonth() + 1;
+    const year = date.getFullYear();
+
+    if (!artist_id) {
+      throw new BadRequestException("Artist ID is required", ErrorCode.VALIDATION_ERROR);
+    }
+
+    if (type === "monthly" && !month) {
+      throw new BadRequestException("Month is required for monthly analytics", ErrorCode.VALIDATION_ERROR);
+    }
+
+    const periodLength =
+      type === "monthly" ? new Date(year, month!, 0).getDate() : 12;
+
+    const playHistory =
+      type === "monthly"
+        ? await Promise.all(
+            Array.from({ length: periodLength }, async (_, day) => {
+              const startDate = new Date(year, month! - 1, day + 1);
+              const endDate = new Date(year, month! - 1, day + 2);
+              const result = await prisma.playHistory.count({
+                where: {
+                  created_at: {
+                    gte: startDate,
+                    lt: endDate,
+                  },
+                  track: {
+                    artist_id,
+                  },
+                },
+              });
+              return { day: day + 1, count: result };
+            })
+          )
+        : await Promise.all(
+            Array.from({ length: 12 }, async (_, month) => {
+              const startDate = new Date(year, month, 1);
+              const endDate = new Date(year, month + 1, 1);
+              const result = await prisma.playHistory.count({
+                where: {
+                  created_at: {
+                    gte: startDate,
+                    lt: endDate,
+                  },
+                  track: {
+                    artist_id,
                   },
                 },
               });

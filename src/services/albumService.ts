@@ -32,13 +32,13 @@ class AlbumService {
     search?: string;
   }) {
     let whereCondition: any = {};
-    const { artist_id, genre_id, search } = param;
+    const { artist_id, genre_id, search } = param || {};
 
     if (artist_id) {
       whereCondition = { artist_id };
     } else if (genre_id) {
       whereCondition = { genre_id };
-    } else if (search) {
+    } else if (search && typeof search === 'string') {
       whereCondition = {
         name: {
           contains: search,
@@ -192,6 +192,143 @@ class AlbumService {
             ...album.artist,
             image: album.artist.image
               ? `${config.BACKEND_BASE_URL}/uploads/artist/${album.artist.image}`
+              : null,
+          }
+        : null,
+    };
+
+    return processedAlbum;
+  }
+
+  public async deleteAlbum(id: string, artist_id: string) {
+    // First check if the album exists and belongs to the artist
+    const album = await prisma.album.findFirst({
+      where: { 
+        id,
+        artist_id
+      },
+    });
+
+    if (!album) {
+      throw new Error("Album not found or you don't have permission to delete it");
+    }
+
+    // Use a transaction to delete related data
+    const result = await prisma.$transaction(async (tx) => {
+      // First get all tracks belonging to this album
+      const tracks = await tx.track.findMany({
+        where: { album_id: id },
+        select: { id: true }
+      });
+
+      const trackIds = tracks.map(track => track.id);
+
+      // Delete play history for these tracks
+      if (trackIds.length > 0) {
+        await tx.playHistory.deleteMany({
+          where: {
+            track_id: {
+              in: trackIds
+            }
+          }
+        });
+      }
+
+      // Delete playlist tracks for these tracks
+      if (trackIds.length > 0) {
+        await tx.playlistTrack.deleteMany({
+          where: {
+            track_id: {
+              in: trackIds
+            }
+          }
+        });
+      }
+
+      // Delete all tracks
+      await tx.track.deleteMany({
+        where: { album_id: id }
+      });
+
+      // Finally delete the album
+      const deletedAlbum = await tx.album.delete({
+        where: { id }
+      });
+
+      return deletedAlbum;
+    });
+
+    return result;
+  }
+
+  public async updateAlbum(
+    id: string, 
+    artist_id: string, 
+    updateData: Partial<{
+      name?: string;
+      description?: string;
+      image?: Express.Multer.File;
+      bg_image?: Express.Multer.File;
+      genre_id?: string;
+    }>
+  ) {
+    // First check if the album exists and belongs to the artist
+    const album = await prisma.album.findFirst({
+      where: { 
+        id,
+        artist_id
+      },
+    });
+
+    if (!album) {
+      throw new Error("Album not found or you don't have permission to update it");
+    }
+
+    // Prepare the data for update
+    const prismaData: any = { ...updateData };
+
+    // Handle file updates
+    if (updateData.image) {
+      prismaData.image = updateData.image.filename;
+    }
+
+    if (updateData.bg_image) {
+      prismaData.bg_image = updateData.bg_image.filename;
+    }
+
+    // Update the album
+    const updatedAlbum = await prisma.album.update({
+      where: { id },
+      data: prismaData,
+      include: {
+        artist: {
+          select: {
+            name: true,
+            image: true,
+          },
+        },
+        genre: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    });
+
+    // Process image URLs
+    const processedAlbum = {
+      ...updatedAlbum,
+      image: updatedAlbum.image
+        ? `${config.BACKEND_BASE_URL}/uploads/album/${updatedAlbum.image}`
+        : null,
+      bg_image: updatedAlbum.bg_image
+        ? `${config.BACKEND_BASE_URL}/uploads/album/${updatedAlbum.bg_image}`
+        : null,
+      artist: updatedAlbum.artist
+        ? {
+            ...updatedAlbum.artist,
+            image: updatedAlbum.artist.image
+              ? `${config.BACKEND_BASE_URL}/uploads/artist/${updatedAlbum.artist.image}`
               : null,
           }
         : null,
