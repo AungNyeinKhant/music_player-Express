@@ -618,6 +618,150 @@ class TrackService {
     
     return result;
   }
+
+  public async getTrackDetail(id: string) {
+    const track = await prisma.track.findUnique({
+      where: { id },
+      include: {
+        artist: {
+          select: {
+            name: true,
+            image: true,
+          },
+        },
+        genre: {
+          select: {
+            name: true,
+          },
+        },
+        album: {
+          select: {
+            name: true,
+            image: true,
+          },
+        },
+      },
+    });
+
+    if (!track) {
+      throw new BadRequestException(
+        "Track not found",
+        ErrorCode.AUTH_NOT_FOUND
+      );
+    }
+
+    // Process URLs
+    const processedTrack = {
+      ...track,
+      audio: track.audio
+        ? `${config.BACKEND_BASE_URL}/uploads/track/${track.audio}`
+        : null,
+      artist: track.artist
+        ? {
+            ...track.artist,
+            image: track.artist.image
+              ? `${config.BACKEND_BASE_URL}/uploads/artist/${track.artist.image}`
+              : null,
+          }
+        : null,
+      album: track.album
+        ? {
+            ...track.album,
+            image: track.album.image
+              ? `${config.BACKEND_BASE_URL}/uploads/album/${track.album.image}`
+              : null,
+          }
+        : null,
+    };
+
+    return processedTrack;
+  }
+
+  public async updateTrack(
+    id: string,
+    artist_id: string,
+    updateData: Partial<{
+      name?: string;
+      description?: string;
+      audio?: Express.Multer.File;
+      album_id?: string;
+      genre_id?: string;
+    }>
+  ) {
+    // First check if the track exists and belongs to the artist
+    const track = await prisma.track.findFirst({
+      where: { 
+        id,
+        artist_id
+      },
+    });
+
+    if (!track) {
+      throw new BadRequestException(
+        "Track not found or you don't have permission to update it",
+        ErrorCode.AUTH_NOT_FOUND
+      );
+    }
+
+    // Prepare the data for update
+    const prismaData: any = { ...updateData };
+
+    // Handle file updates
+    if (updateData.audio) {
+      prismaData.audio = updateData.audio.filename;
+    }
+
+    // Update the track
+    const updatedTrack = await prisma.track.update({
+      where: { id },
+      data: prismaData,
+      include: {
+        artist: {
+          select: {
+            name: true,
+            image: true,
+          },
+        },
+        genre: {
+          select: {
+            name: true,
+          },
+        },
+        album: {
+          select: {
+            name: true,
+            image: true,
+          },
+        },
+      },
+    });
+
+    // Process URLs
+    const processedTrack = {
+      ...updatedTrack,
+      audio: updatedTrack.audio
+        ? `${config.BACKEND_BASE_URL}/uploads/track/${updatedTrack.audio}`
+        : null,
+      artist: updatedTrack.artist
+        ? {
+            ...updatedTrack.artist,
+            image: updatedTrack.artist.image
+              ? `${config.BACKEND_BASE_URL}/uploads/artist/${updatedTrack.artist.image}`
+              : null,
+          }
+        : null,
+      album: updatedTrack.album
+        ? {
+            ...updatedTrack.album,
+            image: updatedTrack.album.image
+              ? `${config.BACKEND_BASE_URL}/uploads/album/${updatedTrack.album.image}`
+              : null,
+          }
+        : null,
+    };
+
+    return processedTrack;
+  }
 }
 const trackService = new TrackService();
 export default trackService;

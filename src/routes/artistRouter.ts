@@ -14,9 +14,11 @@ import {
   createTrack,
   getTracksByAlbumId,
   deleteTrack,
+  getTrackDetail,
+  updateTrack,
 } from "../controllers/artist/trackController";
 import { genreList } from "../controllers/artist/genreController";
-import { getArtistProfile } from "../controllers/artist/profileController";
+import { getArtistProfile, updateArtistProfile } from "../controllers/artist/profileController";
 import { getPlayCountAnalytics } from "../controllers/artist/analyticController";
 
 const artistRouter = Router();
@@ -88,6 +90,21 @@ artistRouter.get(
   authorize("artist"),
   getTracksByAlbumId
 );
+artistRouter.get(
+  "/track/:id",
+  authenticateJWT, 
+  authorize("artist"),
+  getTrackDetail
+);
+artistRouter.put(
+  "/track/:id",
+  authenticateJWT, 
+  authorize("artist"),
+  createMulter("uploads/track", "audio").fields([
+    { name: "audio", maxCount: 1 },
+  ]),
+  updateTrack
+);
 artistRouter.delete(
   "/track/:id",
   authenticateJWT, 
@@ -109,7 +126,7 @@ artistRouter.put(
     { name: "bg_image", maxCount: 1 },
     
   ]),
-  getArtistProfile
+  updateArtistProfile
 );
 //genre api below
 artistRouter.get("/genres", genreList);

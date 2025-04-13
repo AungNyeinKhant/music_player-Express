@@ -109,6 +109,10 @@ class ArtistService {
     // Prepare data for Prisma update
     const prismaData: any = { ...updateData };
 
+    if (updateData.dob) {
+      prismaData.dob = new Date(updateData.dob);
+    }
+
     // Handle password hashing if provided
     if (updateData.password) {
       prismaData.password = await hashValue(updateData.password);
