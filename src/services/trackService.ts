@@ -301,7 +301,7 @@ class TrackService {
       startCountDate.getDate() - parseInt(config.MOST_LISTEN_TRACK_WITHIN)
     );
 
-    const take = parseInt(limit);
+    const take = parseInt(limit) || 10;
 
     // Get most played tracks
     const mostListenTracks = await prisma.playHistory.groupBy({
@@ -319,7 +319,7 @@ class TrackService {
           track_id: "desc",
         },
       },
-      take: take,
+      take: 10,
     });
 
     // Get detailed track information with related data
@@ -574,9 +574,9 @@ class TrackService {
   public async deleteTrack(id: string, artist_id: string) {
     // First check if the track exists and belongs to the artist
     const track = await prisma.track.findFirst({
-      where: { 
+      where: {
         id,
-        artist_id
+        artist_id,
       },
     });
 
@@ -591,12 +591,12 @@ class TrackService {
     const result = await prisma.$transaction(async (tx) => {
       // Delete play history records for this track
       await tx.playHistory.deleteMany({
-        where: { track_id: id }
+        where: { track_id: id },
       });
 
       // Delete playlist track associations
       await tx.playlistTrack.deleteMany({
-        where: { track_id: id }
+        where: { track_id: id },
       });
 
       // Finally delete the track
@@ -605,17 +605,17 @@ class TrackService {
         include: {
           album: {
             select: {
-              name: true
-            }
-          }
-        }
+              name: true,
+            },
+          },
+        },
       });
 
       return deletedTrack;
     });
 
     logger.info(`Track deleted: ${id} - ${result.name} by artist ${artist_id}`);
-    
+
     return result;
   }
 
@@ -690,9 +690,9 @@ class TrackService {
   ) {
     // First check if the track exists and belongs to the artist
     const track = await prisma.track.findFirst({
-      where: { 
+      where: {
         id,
-        artist_id
+        artist_id,
       },
     });
 
