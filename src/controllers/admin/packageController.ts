@@ -54,6 +54,18 @@ export const purchaseList = asyncHandler(
   }
 );
 
+export const packageList = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+    const purchases = await packageService.getPackages();
+
+    return res
+      .status(200)
+      .json(
+        responseFormatter(true, "Purchases retrieved successfully", purchases)
+      );
+  }
+);
+
 export const updatePackage = asyncHandler(
   async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     const { id } = req.params;

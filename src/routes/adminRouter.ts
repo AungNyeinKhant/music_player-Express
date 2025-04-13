@@ -14,6 +14,7 @@ import {
   purchaseList,
   updatePackage,
   deletePackage,
+  packageList,
 } from "../controllers/admin/packageController";
 import {
   getPlayCountAnalytics,
@@ -86,6 +87,13 @@ adminRouter.post(
   authenticateJWT,
   authorize("admin"),
   createPackage
+);
+
+adminRouter.get(
+  "/packages",
+  authenticateJWT,
+  authorize("admin"),
+  packageList
 );
 
 adminRouter.put(
