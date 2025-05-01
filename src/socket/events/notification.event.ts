@@ -2,7 +2,11 @@ import { Server, Socket, Namespace } from 'socket.io';
 import { PurchaseNotification } from '../types/events';
 
 interface AuthenticatedSocket extends Socket {
-  user: any; // You can make this more specific with your user type
+  user: {
+    payload: {userId: string,
+      role: "user" | "admin" | "artist"
+    }
+  }; // You can make this more specific with your user type
 }
 
 export class NotificationEventHandler {
@@ -19,32 +23,34 @@ export class NotificationEventHandler {
     // Handle admin connections and events
     this.adminNamespace.on('connection', (socket: Socket) => {
       const authSocket = socket as AuthenticatedSocket;
-      console.log('Admin connected:', authSocket.user.id);
+      console.log('Admin connected:', authSocket.user.payload.userId);
+      
 
       // Join admin to notification room
       socket.join('notifications');
 
       // Handle purchase notifications
-      socket.on('purchase_notification_seen', (notificationId: string) => {
-        // You can add logic here to mark notification as seen
-        console.log(`Admin seen notification: ${notificationId}`);
-      });
+      // socket.on('purchase_notification_seen', (notificationId: string) => {
+      //   // You can add logic here to mark notification as seen
+      //   console.log(`Admin seen notification: ${notificationId}`);
+      // });
 
       socket.on('disconnect', () => {
-        console.log('Admin disconnected:', authSocket.user.id);
+        console.log('Admin disconnected:', authSocket.user.payload.userId);
       });
     });
 
     // Handle user connections and events
     this.userNamespace.on('connection', (socket: Socket) => {
       const authSocket = socket as AuthenticatedSocket;
-      console.log('User connected:', authSocket.user.id);
+      console.log('User connected:', authSocket.user.payload.userId);
+      
 
       // Join user to their personal room
-      socket.join(`user_${authSocket.user.id}`);
+      socket.join(`user_${authSocket.user.payload.userId}`);
 
       socket.on('disconnect', () => {
-        console.log('User disconnected:', authSocket.user.id);
+        console.log('User disconnected:', authSocket.user.payload.userId);
       });
     });
   }
@@ -64,4 +70,4 @@ export class NotificationEventHandler {
   public emitPurchaseStatus(userId: string, status: string) {
     this.userNamespace.to(`user_${userId}`).emit('purchase_status', { status });
   }
-} 
+}  
