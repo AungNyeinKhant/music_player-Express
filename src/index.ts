@@ -2,6 +2,7 @@ import express from "express";
 import helmet from "helmet";
 import cors from "cors";
 import "dotenv/config";
+import { createServer } from "http";
 
 import userRouter from "./routes/userRouter";
 import artistRouter from "./routes/artistRouter";
@@ -10,10 +11,15 @@ import { config } from "./config/app.config";
 import { errorHandler } from "./middleware/errorHandler";
 import passport from "./middleware/passport";
 import path from "path";
+import initSocket from "./socket";
 
 const app = express();
+const server = createServer(app);
 const PORT = config.PORT;
 const BASE_PATH = config.BASE_PATH;
+
+// Initialize Socket.IO and export notificationHandler
+
 
 app.use(helmet());
 app.use(
@@ -51,6 +57,8 @@ app.use(
   },
   express.static(path.join("uploads"))
 );
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
+const io = initSocket(server);
+export const notificationHandler = io.notificationHandler

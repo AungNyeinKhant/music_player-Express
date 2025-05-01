@@ -1,6 +1,7 @@
 import { config } from "../config/app.config";
 import prisma from "../prisma";
 import { PackageDto } from "../types/package.dto";
+import { notificationHandler } from "..";
 
 class PackageService {
   public async getPackages() {
@@ -45,7 +46,20 @@ class PackageService {
         price: subscribePackage.price,
         transition: transition.filename,
       },
+      
     });
+
+    // Emit notification to admin and user
+    notificationHandler.emitNewPurchase({
+      id: purchase.id,
+      userId: purchase.user_id,
+      
+      packageName: subscribePackage.name,
+      price: purchase.price,
+      
+    });
+
+    notificationHandler.emitPurchaseStatus(purchase.user_id, purchase.status)
 
     return purchase;
   }
@@ -105,6 +119,7 @@ class PackageService {
         where: { id: purchase_id },
         data: { status: "REJECTED" },
       });
+      notificationHandler.emitPurchaseStatus(purchase.user_id,"REJECTED")
       return { rejectedPurchase };
     }
 
@@ -135,10 +150,10 @@ class PackageService {
         where: { id: purchase.user_id },
         data: { valid_until: newValidUntil },
       });
-
+      
       return { confirmedPurchase, updatedUser };
     });
-
+    notificationHandler.emitPurchaseStatus(purchase.user_id,"APPROVED")
     return result;
   }
 
